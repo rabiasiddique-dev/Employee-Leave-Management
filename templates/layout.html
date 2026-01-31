@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title + " - " if title else "" }}LeaveFlow</title>
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+    <!-- !!! BOOTSTRAP CSS (ADD THIS LINE) !!! -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" 
+          integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9buW5" crossorigin="anonymous">
+    
+    <!-- Main Stylesheet (MUST COME AFTER BOOTSTRAP to override if needed) -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
+    {% block head_extra %}{% endblock %}
+</head>
+<body>
+    <a href="#main-content" class="skip-to-main-content-link">Skip to main content</a>
+
+    <header class="site-header-wrapper no-print">
+        {% include 'partials/_navbar.html' %}
+    </header>
+
+    {# ====================================================================================== #}
+    {# === MAIN CONTENT AREA (Yeh flex: 1; se baaki jagah le lega) === #}
+    {# ====================================================================================== #}
+    <main id="main-content" class="container page-content">
+        {# Flash Messages #}
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="flash-messages-container no-print" role="alertdialog" aria-live="assertive">
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                        <span>{{ message }}</span>
+                        <button type="button" class="btn-close-alert" aria-label="Close this message" onclick="this.parentElement.style.display='none';">×</button>
+                    </div>
+                {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        {# Page-specific content #}
+        {% block content %}
+            <p>Welcome to LeaveFlow!</p>
+        {% endblock %}
+    </main>
+    {# ====================================================================================== #}
+
+    <footer class="site-footer no-print">
+        {% include 'partials/_footer.html' %}
+    </footer>
+
+    {# Global JavaScript for Navbar Notification Count #}
+    {% if session.user_id %}
+    <script id="navbar-notification-script">
+        function updateNavbarNotificationCount() {
+            const badge = document.getElementById('navbar-notif-count-badge');
+            if (!badge) { return; }
+            fetch("{{ url_for('unread_notifications_count') }}") 
+                .then(response => {
+                    if (!response.ok) { throw new Error(`HTTP error ${response.status}`); }
+                    return response.json(); 
+                })
+                .then(data => {
+                    if (data && typeof data.unread_count === 'number') { 
+                        const count = data.unread_count;
+                        if (count > 0) {
+                            badge.textContent = count;
+                            badge.style.display = 'inline-block'; 
+                        } else {
+                            badge.style.display = 'none'; 
+                        }
+                    } else { badge.style.display = 'none'; }
+                })
+                .catch(error => {
+                    console.error('[Layout Script] Error fetching notification count:', error);
+                    badge.style.display = 'none'; 
+                });
+        }
+        document.addEventListener('DOMContentLoaded', updateNavbarNotificationCount);
+        window.updateNavbarNotificationCount = updateNavbarNotificationCount;
+    </script>
+    {% endif %} 
+
+    <!-- !!! BOOTSTRAP JAVASCRIPT (ADD THESE LINES AT THE END OF BODY) !!! -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js" integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js" integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57B+B5SjbPZJ2f6+5wF8Jg9P9E" crossorigin="anonymous"></script>
+
+
+    <!-- Core/Global JavaScript File (your custom script.js) -->
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+
+    {# Block for page-specific JavaScript files #}
+    {% block scripts_extra %}{% endblock %}
+</body>
+</html>

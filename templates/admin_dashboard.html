@@ -1,0 +1,653 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="admin-dashboard-container">
+    <h1 class="page-title">
+        <i class="fas fa-user-shield"></i>
+        <span>Admin Dashboard - Leave Management</span>
+    </h1>
+    <p class="page-subtitle">Review and manage employee leave applications.</p>
+
+    <!-- PENDING LEAVE APPLICATIONS SECTION -->
+    <section class="admin-section">
+        <h2 class="section-title"><i class="fas fa-hourglass-half"></i> Pending Leave Applications ({{ pending_leaves|length }})</h2>
+        {% if pending_leaves %}
+        <div class="table-responsive">
+            <table class="styled-table">
+                <thead>
+                    <tr>
+                        <th>Employee ID</th>
+                        <th>Name</th>
+                        <th>Type</th>
+                        <th>From</th>
+                        <th>To</th>
+                        <th>Reason</th>
+                        <th>Applied On</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for leave in pending_leaves %}
+                    <tr>
+                        <td>{{ leave.employee_id | default('N/A') }}</td>
+                        <td>{{ leave.user_name | default('N/A') }}</td>
+                        <td><span class="leave-type-badge type-{{ leave.leave_type|lower }}">{{ leave.leave_type | title }}</span></td>
+                        <td>{{ leave.start_date }}</td>
+                        <td>{{ leave.end_date }}</td>
+                        <td class="reason-cell">{{ leave.reason|truncate(30, True) if leave.reason else 'N/A' }}</td>
+                        <td>{{ leave.applied_date | datetime_local('%d-%b-%Y %I:%M %p') if leave.applied_date else 'N/A' }}</td>
+                        <td class="action-buttons">
+                            <form method="POST" action="{{ url_for('manage_leave', leave_id=leave._id, action='approve') }}" style="display:inline;">
+                                <button type="submit" class="btn btn-success btn-sm"><i class="fas fa-check"></i> Approve</button>
+                            </form>
+                            <button type="button" class="btn btn-danger btn-sm" 
+                                    data-user-name="{{ leave.user_name | e }}" 
+                                    data-reject-url="{{ url_for('manage_leave', leave_id=leave._id, action='reject') }}"
+                                    onclick="showRejectModal(this)">
+                                <i class="fas fa-times"></i> Reject
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <i class="fas fa-calendar-check"></i>
+            <p>No pending leave applications at the moment.</p>
+        </div>
+        {% endif %}
+    </section>
+
+    <!-- ADMIN QUICK ACTIONS SECTION -->
+    <section class="admin-section">
+        <h2 class="section-title"><i class="fas fa-tools"></i> Admin Quick Actions</h2>
+        <div class="admin-actions-grid">
+            <a href="{{ url_for('admin_manage_leave_settings') }}" class="action-card">
+                <div class="action-card-icon">
+                    <i class="fas fa-file-alt fa-lg"></i>
+                </div>
+                <div class="action-card-body">
+                    <h5>Manage Leave Policy</h5>
+                    <p>Set default annual, sick, and casual leave quotas for new employees.</p>
+                </div>
+            </a>
+
+            <a href="{{ url_for('manage_employees_page') }}" class="action-card">
+                <div class="action-card-icon">
+                    <i class="fas fa-users-cog fa-lg"></i>
+                </div>
+                <div class="action-card-body">
+                    <h5>Manage Employees</h5>
+                    <p>View, edit, or manage employee profiles and balances.</p>
+                </div>
+            </a>
+        </div>
+    </section>
+
+    <!-- ALL LEAVE HISTORY SECTION -->
+<section class="admin-section">
+    <h2 class="section-title"><i class="fas fa-history"></i> All Leave History</h2>
+    
+    <div class="history-controls">
+        <!-- Form for search, removed Bootstrap 'd-flex' from form tag -->
+        <form method="GET" action="{{ url_for('admin_dashboard') }}">
+            <input type="text" name="search_term" id="historySearchInput" class="form-control" 
+                   placeholder="Search by name, ID, type, or status..." value="{{ search_term if search_term }}">
+            <button type="submit" class="btn btn-primary">Search</button>
+            {% if search_term %}
+            <a href="{{ url_for('admin_dashboard') }}" class="btn btn-secondary">Clear</a>
+            {% endif %}
+        </form>
+    </div>
+
+    {% if all_leaves %}
+    <div class="table-responsive">
+        <table class="styled-table">
+            <thead>
+                <tr>
+                    <th>Employee ID</th>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>From - To</th>
+                    <th>Status</th>
+                    <th>Applied On</th>
+                    <th>Manager Comments</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for leave in all_leaves %}
+                <tr>
+                    <td>{{ leave.employee_id | default('N/A') }}</td>
+                    <td>{{ leave.user_name | default('N/A') }}</td>
+                    <td><span class="leave-type-badge type-{{ leave.leave_type|lower }}">{{ leave.leave_type | title }}</span></td>
+                    <td><a href="{{ url_for('admin_view_leave_detail', leave_id=leave._id) }}">{{ leave.start_date | default('N/A') }} to {{ leave.end_date | default('N/A') }}</a></td>
+                    <td><span class="status-badge status-{{ leave.status.split(' ')[0]|lower }}">{{ leave.status | display_status_text }}</span></td>
+                    <td>{{ leave.applied_date | datetime_local('%d-%b-%Y %I:%M %p') if leave.applied_date else 'N/A' }}</td>
+                    <td class="reason-cell">{{ leave.manager_comments | default('-') }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <!-- THIS IS THE CRUCIAL PART FOR PAGINATION RENDERING -->
+    <div class="row">
+        <div class="col-md-12">
+            <nav aria-label="Page navigation for history">
+                <ul class="pagination justify-content-center">
+                    {{ history_pagination.links }}
+                </ul>
+            </nav>
+        </div>
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <i class="fas fa-folder-open"></i>
+        <p>No leave history found.</p>
+    </div>
+    {% endif %}
+</section>
+</div>
+
+<!-- REJECT MODAL -->
+<div id="rejectModal" class="modal">
+    <div class="modal-content">
+        <span class="close-button" onclick="closeRejectModal()">×</span>
+        <h3>Reject Leave Application</h3>
+        <p>For: <strong id="rejectEmployeeName"></strong></p>
+        <form id="rejectForm" method="POST" action="">
+            <div class="form-group">
+                <label for="manager_comments">Reason for Rejection (Required):</label>
+                <textarea id="manager_comments" name="manager_comments" rows="3" class="form-control" required></textarea>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-secondary btn-sm" onclick="closeRejectModal()">Cancel</button>
+                <button type="submit" class="btn btn-danger btn-sm">Confirm Rejection</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+    /* Base Styles & Typography */
+    body {
+        font-family: 'Inter', 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+        color: #344767; /* A soft, professional dark grey */
+        background-color: #f8f9fa; /* Lighter background */
+    }
+
+    /* Admin Dashboard Container */
+    .admin-dashboard-container {
+        padding: 30px;
+        max-width: 1300px; /* Slightly wider for more content */
+        margin: 0 auto;
+    }
+
+    /* Page Titles & Subtitles */
+    .page-title {
+        display: flex;
+        align-items: center;
+        gap: 15px; /* More space */
+        color: #2b3b52; /* Deeper color for titles */
+        margin-bottom: 12px;
+        font-size: 2.2rem; /* Larger title */
+        font-weight: 700; /* Bolder */
+    }
+
+    .page-subtitle {
+        color: #67748e; /* Softer grey for subtitle */
+        font-size: 1.15rem;
+        margin-bottom: 40px; /* More space below subtitle */
+    }
+
+    /* Section Styling */
+    .admin-section {
+        margin-bottom: 35px; /* Consistent spacing between sections */
+        background-color: #ffffff;
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05); /* Softer, slightly larger shadow */
+        border: 1px solid #e9edf2; /* Very subtle border */
+    }
+
+    .section-title {
+        font-size: 1.8rem; /* Larger section titles */
+        color: #344767;
+        margin-bottom: 25px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-weight: 600;
+        border-bottom: 1px solid #f0f2f5; /* Subtle line under title */
+        padding-bottom: 15px;
+    }
+    .section-title i {
+        /* Keeping distinct icon colors as they add professionalism */
+        color: #4CAF50; /* Primary icon color, general fallback */
+    }
+    .section-title i.fa-hourglass-half { color: #f2a74c; /* Orange for pending */ }
+    .section-title i.fa-tools { color: #007bff; /* Blue for tools */ }
+    .section-title i.fa-history { color: #67748e; /* Grey for history */ }
+
+
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 50px 20px; /* More vertical padding */
+        background-color: #f8f9fa;
+        border: 1px dashed #ced4da; /* Dashed border for empty state */
+        border-radius: 12px;
+        color: #6c757d;
+        font-size: 1.1rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 200px; /* Taller empty state */
+    }
+
+    .empty-state i {
+        font-size: 4rem; /* Larger icon */
+        opacity: 0.8;
+        /* Original green for success/check */
+        color: #28a745;
+        margin-bottom: 25px;
+    }
+    .empty-state i.fa-folder-open { /* Specific color for history empty state */
+        color: #6c757d; /* Original grey */
+    }
+    .empty-state p {
+        margin-bottom: 0;
+        font-size: 1.3rem; /* Slightly larger text */
+        font-weight: 500;
+        color: #495057; /* Darker text */
+    }
+
+    /* Admin Quick Actions Cards */
+    .admin-actions-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); /* Slightly wider min width */
+        gap: 30px; /* More gap */
+    }
+    .action-card {
+        display: flex;
+        align-items: flex-start;
+        background-color: #ffffff;
+        border: 1px solid #e9edf2;
+        border-radius: 12px;
+        padding: 30px; /* More padding */
+        text-decoration: none;
+        color: inherit;
+        box-shadow: 0 4px 18px rgba(0, 0, 0, 0.06); /* Refined shadow */
+        transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+    }
+    .action-card:hover {
+        transform: translateY(-8px); /* More pronounced lift */
+        box-shadow: 0 12px 35px rgba(0, 123, 255, 0.15); /* More vibrant shadow on hover */
+        border-color: #007bff;
+        color: inherit;
+    }
+    .action-card-icon {
+        flex-shrink: 0;
+        width: 60px; /* Larger icon circle */
+        height: 60px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 25px; /* More space */
+        background-color: #e6f7ff; /* Lighter blue background */
+        color: #007bff; /* Primary blue icon color */
+        font-size: 1.8rem; /* Larger icon */
+        box-shadow: 0 2px 8px rgba(0, 123, 255, 0.2); /* Subtle icon shadow */
+    }
+    .action-card-body h5 {
+        margin-bottom: 10px; /* More space below heading */
+        font-weight: 600;
+        font-size: 1.25rem; /* Larger heading */
+        color: #344767;
+    }
+    .action-card-body p {
+        margin-bottom: 0;
+        font-size: 1rem; /* Slightly larger paragraph */
+        color: #67748e;
+        line-height: 1.6;
+    }
+
+    /* Table Styles */
+    .table-responsive {
+        overflow-x: auto;
+    }
+    .styled-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 25px 0;
+        font-size: 0.95em; /* Slightly larger text in table */
+        min-width: 850px;
+        border-radius: 10px; /* Slightly more rounded */
+        overflow: hidden;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04); /* Subtler table shadow */
+    }
+    .styled-table thead tr {
+        background-color: #eff2f6; /* Light grey header */
+        color: #344767; /* Darker text */
+        text-align: left;
+        font-weight: 600; /* Bolder header text */
+    }
+    .styled-table th,
+    .styled-table td {
+        padding: 15px 20px; /* More padding */
+        border-bottom: 1px solid #f0f2f5; /* Lighter border */
+    }
+    .styled-table tbody tr {
+        transition: background-color 0.2s ease;
+    }
+    .styled-table tbody tr:hover {
+        background-color: #f6f9fc; /* Light hover effect */
+    }
+    .styled-table tbody tr:last-of-type {
+        border-bottom: none; /* No double border at end */
+    }
+
+    /* Table search */
+    .history-controls { 
+        margin-bottom: 25px; 
+        display: flex; /* Flex container for the form and other potential controls */
+        align-items: center; 
+        gap: 10px; /* Space between the form and any other element in history-controls */
+    }
+    .history-controls form { /* Target the form directly to make it flex */
+        display: flex;
+        flex-grow: 1; /* Allow the form to take up available space */
+        gap: 10px; /* Space between input and buttons */
+        align-items: center; /* Vertically align input and buttons */
+        max-width: 600px; /* Add a max-width to the form if needed */
+    }
+    .history-controls .form-control {
+        flex-grow: 1; /* Input takes as much space as possible */
+        /* Removed max-width here, let flex-grow handle sizing based on container */
+        padding: 12px 18px; /* More padding */
+        border: 1px solid #ced4da;
+        border-radius: 8px;
+        font-size: 1.05rem; /* Larger text */
+        box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.08); /* More pronounced inset shadow */
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        height: 48px; /* Explicit height to match buttons */
+    }
+    .history-controls .form-control:focus {
+        border-color: #007bff;
+        box-shadow: 0 0 0 0.25rem rgba(0, 123, 255, 0.25);
+        outline: none;
+    }
+    .history-controls .btn {
+        padding: 12px 18px; /* Match input padding */
+        font-size: 1.05rem; /* Match input font size */
+        border-radius: 8px; /* Match input border-radius */
+        flex-shrink: 0; /* Prevent buttons from shrinking */
+        height: 48px; /* Explicit height to match input */
+        display: flex; /* Use flex for button content alignment */
+        align-items: center; /* Center content vertically */
+        justify-content: center; /* Center content horizontally */
+        white-space: nowrap; /* Prevent text wrapping inside buttons */
+    }
+
+    /* Badges for Leave Type and Status - Adjusted for more solid colors */
+    .leave-type-badge, .status-badge {
+        display: inline-block;
+        padding: 6px 12px; /* A bit more padding for presence */
+        border-radius: 6px; /* Slightly more rounded corners */
+        font-weight: bold; /* Bolder font for clarity */
+        font-size: 0.88em; /* Slightly larger text */
+        text-align: center;
+        min-width: 80px; /* Ensures consistent width */
+        white-space: nowrap; /* Prevent text wrap */
+        line-height: 1.2; /* Better line height for text */
+    }
+
+    /* Leave Type Badges - Original Colors */
+    .type-annual { background-color: #e0f7fa; color: #007bff; }
+    .type-sick { background-color: #ffe0b2; color: #ff9800; }
+    .type-casual { background-color: #e8f5e9; color: #4caf50; }
+    .type-maternity { background-color: #fce4ec; color: #e91e63; }
+    .type-paternity { background-color: #e1f5fe; color: #2196f3; }
+    .type-unpaid { background-color: #f3f3f3; color: #495057; }
+
+
+    /* Status Badges - Now with more solid background colors for better visibility */
+    .status-pending { background-color: #ffc107; color: #343a40; } /* Yellow background, dark text */
+    .status-approved { background-color: #28a745; color: white; } /* Green background, white text */
+    .status-rejected { background-color: #dc3545; color: white; } /* Red background, white text */
+    .status-cancelled { background-color: #6c757d; color: white; } /* Grey background, white text */
+    .status-error { background-color: #f0ad4e; color: white; } /* Orange-yellow for error */
+
+
+    /* Action Buttons in table - REVERTED TO ORIGINAL COLORS & STYLING BASICS */
+    .action-buttons {
+        white-space: nowrap;
+        display: flex;
+        gap: 8px; /* Original gap */
+    }
+    .btn {
+        padding: 8px 12px; /* Original padding */
+        border-radius: 5px; /* Original border-radius */
+        border: none;
+        cursor: pointer;
+        font-size: 0.9em; /* Original font-size */
+        transition: background-color 0.2s ease, transform 0.1s ease; /* Keep subtle hover */
+        display: inline-flex;
+        align-items: center;
+        gap: 5px; /* Original gap */
+    }
+    .btn i { font-size: 0.9em; } /* Icon size to match original button look */
+
+    /* Original specific button colors */
+    .btn-primary { background-color: #007bff; color: white; }
+    .btn-primary:hover { background-color: #0056b3; }
+    .btn-success { background-color: #28a745; color: white; }
+    .btn-success:hover { background-color: #218838; transform: translateY(-1px); }
+    .btn-danger { background-color: #dc3545; color: white; }
+    .btn-danger:hover { background-color: #c82333; transform: translateY(-1px); }
+    .btn-secondary { background-color: #6c757d; color: white; }
+    .btn-secondary:hover { background-color: #5a6268; transform: translateY(-1px); }
+    .btn-sm { padding: 6px 10px; font-size: 0.8em; } /* Original sm padding/font */
+
+    /* PAGINATION STYLING */
+    /* This section specifically targets Flask-Paginate's Bootstrap output */
+    .pagination {
+        list-style: none !important; /* Force remove bullets */
+        padding-left: 0 !important; /* Force remove default padding that creates space for bullets */
+        margin-top: 20px; /* Add some space above pagination */
+        display: flex; /* Make horizontal */
+        justify-content: center; /* Center the pagination links */
+        flex-wrap: wrap; /* Allow wrapping onto multiple lines */
+    }
+
+    .pagination .page-item {
+        margin: 0 3px; /* Space between page items */
+        /* Ensure that Bootstrap's default 'display: list-item' for .page-item is handled by the parent flex */
+    }
+
+    .pagination .page-item .page-link {
+        border-radius: 8px; /* Match your custom button border-radius */
+        padding: 10px 18px; /* Custom padding */
+        font-size: 1rem; /* Custom font size */
+        font-weight: 500;
+        color: #55606e; /* Darker text */
+        background-color: #e9edf2; /* Lighter background */
+        border: 1px solid #d9e0e7; /* Subtle border */
+        transition: background-color 0.2s, border-color 0.2s, color 0.2s, box-shadow 0.2s;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05); /* Subtle shadow */
+        line-height: 1.2; /* Ensure consistent line height */
+        display: block; /* Make sure the link fills its container */
+    }
+    .pagination .page-item .page-link:hover {
+        background-color: #dee4ed;
+        border-color: #c7d2de;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    }
+    .pagination .page-item.active .page-link {
+        background-color: #007bff;
+        color: white;
+        border-color: #007bff;
+        cursor: default;
+        box-shadow: 0 3px 10px rgba(0, 123, 255, 0.3);
+    }
+    .pagination .page-item.disabled .page-link {
+        background-color: #f0f2f5;
+        color: #adb5bd;
+        cursor: not-allowed;
+        box-shadow: none;
+    }
+    /* END PAGINATION STYLING */
+
+
+    /* Modal Styles */
+    .modal {
+        display: none; /* Initially hidden to prevent showing on page load */
+        position: fixed; z-index: 1050; left: 0; top: 0; width: 100%; height: 100%; overflow: auto;
+        background-color: rgba(0,0,0,0.65); /* Darker overlay */
+        backdrop-filter: blur(5px); /* More blur */
+        align-items: center; /* Centering for flexbox */
+        justify-content: center; /* Centering for flexbox */
+        animation: fadeInOverlay 0.3s forwards;
+    }
+    @keyframes fadeInOverlay { from { opacity: 0; } to { opacity: 1; } }
+
+    .modal-content {
+        background-color: #ffffff;
+        margin: auto;
+        padding: 35px; /* More padding */
+        border: 1px solid #e0e6f0;
+        width: 95%; max-width: 580px; /* Slightly wider */
+        border-radius: 16px; /* More rounded */
+        box-shadow: 0 15px 40px rgba(0,0,0,0.25); /* Stronger, diffused shadow */
+        position: relative;
+        animation: fadeInModal 0.4s cubic-bezier(0.25, 0.8, 0.25, 1.15); /* Bouncier animation */
+    }
+    @keyframes fadeInModal {
+        from { opacity: 0; transform: translateY(-70px) scale(0.9); }
+        to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    .close-button {
+        color: #888;
+        font-size: 34px; /* Larger close button */
+        font-weight: normal; /* Normal weight */
+        line-height: 1;
+        position: absolute; right: 18px; top: 15px; /* Adjusted position */
+        cursor: pointer;
+        transition: color 0.2s ease, transform 0.2s ease;
+    }
+    .close-button:hover, .close-button:focus { color: #344767; transform: rotate(90deg); }
+    .modal-content h3 { margin-top: 0; margin-bottom: 25px; color: #344767; font-size: 1.8rem; font-weight: 600; }
+    .modal-content p strong { color: #007bff; }
+    .modal-content .form-group { margin-bottom: 25px; }
+    .modal-content .form-group label {
+        margin-bottom: 10px; display: block; font-weight: 600; color: #495057; font-size: 1.05rem;
+    }
+    .modal-content .form-control {
+        width: 100%; padding: 12px 15px; border: 1px solid #ced4da; border-radius: 10px; box-sizing: border-box;
+        font-size: 1.05rem;
+        min-height: 110px;
+        resize: vertical;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+    .modal-content .form-control:focus {
+        border-color: #007bff;
+        box-shadow: 0 0 0 0.3rem rgba(0, 123, 255, 0.2);
+        outline: none;
+    }
+    .modal-actions { text-align: right; margin-top: 30px; border-top: 1px solid #f0f2f5; padding-top: 25px; }
+    .modal-actions button { margin-left: 15px; }
+
+    /* Responsive Adjustments */
+    @media (max-width: 992px) {
+        .admin-dashboard-container { padding: 25px; }
+        .page-title { font-size: 2rem; }
+        .section-title { font-size: 1.6rem; }
+        .admin-section { padding: 25px; }
+        .action-card { padding: 25px; }
+        .action-card-icon { width: 50px; height: 50px; font-size: 1.5rem; margin-right: 20px;}
+        .action-card-body h5 { font-size: 1.15rem; }
+        .action-card-body p { font-size: 0.95rem; }
+        .styled-table { min-width: unset; }
+    }
+
+    @media (max-width: 768px) {
+        .page-title { font-size: 1.8rem; gap: 10px; margin-bottom: 8px; }
+        .page-subtitle { font-size: 1rem; margin-bottom: 30px; }
+        .section-title { font-size: 1.4rem; padding-bottom: 10px; margin-bottom: 20px; }
+        .admin-actions-grid { grid-template-columns: 1fr; }
+        .action-card { flex-direction: column; align-items: center; text-align: center; padding: 20px; }
+        .action-card-icon { margin: 0 0 15px 0; font-size: 1.6rem; width: 55px; height: 55px; }
+        .action-card-body { width: 100%; }
+        .action-card-body h5 { text-align: center; }
+        .action-card-body p { text-align: center; }
+        .action-buttons { flex-direction: column; gap: 10px; }
+        .action-buttons button, .action-buttons form { width: 100%; }
+        .history-controls .form-control { max-width: 100%; }
+        /* Adjusted for form buttons to stack on smaller screens */
+        .history-controls form { 
+            flex-direction: column;
+            gap: 10px;
+            width: 100%;
+            align-items: stretch; /* Stretch items to fill width */
+            max-width: 100%; /* Ensure form is full width on small screens */
+        }
+        .history-controls .form-control {
+            max-width: 100%; /* Ensure input uses full width */
+        }
+        .history-controls .btn {
+            width: 100%; /* Make buttons full width */
+            margin-left: 0 !important; /* Override any lingering ml-2 */
+            margin-right: 0 !important;
+        }
+        .pagination { justify-content: space-around; gap: 8px;} /* Change from .pagination-container to .pagination */
+        .modal-content { padding: 25px; border-radius: 12px; }
+        .modal-actions { flex-direction: column; gap: 10px; padding-top: 20px; }
+        .modal-actions button { margin-left: 0; width: 100%; }
+    }
+
+    @media (max-width: 480px) {
+        .admin-dashboard-container { padding: 15px; }
+        .page-title { font-size: 1.6rem; }
+        .section-title { font-size: 1.2rem; }
+        .empty-state { padding: 30px 15px; min-height: 180px; }
+        .empty-state i { font-size: 3.5rem; margin-bottom: 20px; }
+        .empty-state p { font-size: 1.1rem; }
+        .styled-table th, .styled-table td { padding: 10px 12px; font-size: 0.9em; }
+        .btn { padding: 8px 12px; font-size: 0.85em; gap: 5px; }
+        .action-card { padding: 15px; }
+        .action-card-icon { font-size: 1.4rem; width: 50px; height: 50px; }
+        .action-card-body h5 { font-size: 1.1rem; }
+        .action-card-body p { font-size: 0.9em; }
+    }
+</style>
+
+<script>
+    // --- MODAL SCRIPT ---
+    const rejectModal = document.getElementById('rejectModal');
+    const rejectForm = document.getElementById('rejectForm');
+    const rejectEmployeeName = document.getElementById('rejectEmployeeName');
+    const commentsTextarea = document.getElementById('manager_comments');
+
+    function showRejectModal(button) {
+        const rejectUrl = button.dataset.rejectUrl;
+        const userName = button.dataset.userName;
+        if (rejectModal && rejectForm && rejectEmployeeName) {
+            rejectEmployeeName.textContent = userName;
+            rejectForm.action = rejectUrl;
+            commentsTextarea.value = ''; // Clear textarea on new modal open
+            rejectModal.style.display = 'flex'; // Changed to flex for centering
+            commentsTextarea.focus();
+        }
+    }
+
+    function closeRejectModal() { if (rejectModal) { rejectModal.style.display = 'none'; if (rejectForm) { rejectForm.reset(); } } }
+    window.addEventListener('click', function(event) { if (event.target === rejectModal) { closeRejectModal(); } });
+    document.addEventListener('keydown', function(event) { if (event.key === "Escape" && rejectModal.style.display === 'flex') { closeRejectModal(); } });
+
+    // The old client-side JavaScript for 'All Leave History' has been removed
+    // as pagination is now handled by Flask-Paginate on the server side.
+    // Sorting will require backend implementation if desired.
+</script>
+{% endblock %}

@@ -1,0 +1,5 @@
+Flask
+pymongo
+bcrypt
+python-dotenv
+Flask-Session  # For server-side sessions

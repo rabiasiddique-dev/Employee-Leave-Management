@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}LeaveFlow{% endblock %}</title>
+    
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    
+    <!-- Google Fonts - Poppins for a modern, professional look -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* Base styles that affect the entire page layout */
+        body {
+            padding-top: 70px; /* Adjust this value to match your navbar's height to prevent content overlap */
+            margin: 0;
+            font-family: 'Poppins', 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+            color: #344767; /* A professional dark grey for general text */
+            background-color: #f8f9fa; /* Lighter background consistent with dashboard */
+            line-height: 1.6; /* Improved readability */
+        }
+
+        /* Navbar Styling */
+        .navbar {
+            background-color: #007bff; /* Solid blue, matching the original image */
+            padding: 1rem 1.5rem; /* Increased padding for more height/thickness */
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+            position: fixed; /* Make it stick to the top */
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 1000; /* Ensure it stays on top of other content */
+            color: white; /* Default text color for navbar elements */
+        }
+
+        .navbar-container {
+            max-width: 1300px; /* Wider container, similar to admin-dashboard-container for consistency */
+            margin: 0 auto; /* Center the content */
+            display: flex;
+            justify-content: space-between; /* Space out brand and nav links */
+            align-items: center; /* Vertically align items */
+            width: 100%;
+        }
+
+        /* Brand/Logo Styling */
+        .navbar-brand {
+            font-family: 'Poppins', sans-serif;
+            font-size: 1.8rem; /* Larger brand name */
+            font-weight: 700;
+            color: white; /* Default white for brand */
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px; /* Space between icon and text */
+        }
+
+        .navbar-brand i {
+            font-size: 1.5em; /* Larger icon in brand */
+            color: white; /* Brand icon color - now white */
+        }
+        
+        /* "LeaveFlow" Text Enhancement */
+        .navbar-brand .brand-text {
+            color: white; /* Ensure it's 'bilkul white' */
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.8), 0 0 20px rgba(255, 255, 255, 0.4); /* Soft, glowing effect for 'awesome' look */
+        }
+
+        /* Navigation Links (Desktop) */
+        .navbar-nav {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            align-items: center;
+        }
+
+        .navbar-nav .nav-item {
+            margin-left: 25px; /* Space between main nav items */
+            position: relative; /* For dropdown positioning */
+        }
+        
+        /* General nav-link styling (for Login/Register/Regular User dashboard items) */
+        .navbar-nav .nav-link {
+            color: rgba(255, 255, 255, 0.85); /* Slightly transparent white for subtle look */
+            text-decoration: none;
+            font-size: 1rem;
+            font-weight: 500;
+            padding: 10px 0; /* Padding to make clickable area larger */
+            transition: color 0.3s ease; /* Smooth color transition */
+            display: flex;
+            align-items: center;
+            gap: 8px; /* Space for icons */
+        }
+
+        .navbar-nav .nav-link:hover,
+        .navbar-nav .nav-link.active {
+            color: white; /* Pure white on hover/active */
+            text-decoration: none !important; /* Ensure no underline on hover or active */
+        }
+
+        .navbar-nav .nav-link i {
+            font-size: 1em; /* Icons same size as text */
+        }
+
+        /* Navbar "Buttons" (Admin Panel, Reports, Notifications) - Custom styling to look like buttons */
+        .nav-button-link {
+            background-color: rgba(255, 255, 255, 0.15); /* Light transparent background */
+            padding: 8px 15px; /* Button-like padding */
+            border-radius: 6px; /* Rounded corners */
+            color: white; /* White text */
+            text-decoration: none;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: background-color 0.2s ease, box-shadow 0.2s ease, transform 0.1s ease; /* Smooth transitions for hover */
+        }
+        .nav-button-link:hover {
+            background-color: rgba(255, 255, 255, 0.4); /* Brighter white on hover */
+            color: white; /* Ensure text remains white on bright hover */
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.8); /* Stronger white glow */
+            transform: translateY(-1px); /* Slight lift effect */
+            text-decoration: none !important; /* Ensure no underline on hover */
+        }
+        .nav-button-link.active-nav-button {
+            background-color: rgba(255, 255, 255, 0.4); /* Brighter white for active state */
+            color: white; /* Ensure text remains white on active */
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.8); /* Active glow */
+            text-decoration: none !important; /* Ensure no underline on active */
+        }
+
+        /* Notification Badge */
+        #navbar-notif-count-badge {
+            background-color: #dc3545; /* Red, consistent with dashboard notification badge */
+            color: white;
+            border-radius: 50%; /* Pill shape */
+            min-width: 20px; /* Ensure circular shape */
+            height: 20px;
+            display: inline-flex; /* For centering content */
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75em; /* Slightly larger text */
+            padding: 2px 6px; /* Adjust padding */
+            line-height: 1; /* For vertical alignment */
+            transform: translateY(-2px); /* Slight vertical adjustment */
+        }
+
+        /* User Profile Dropdown Toggle ("Hi, User" button) */
+        .nav-profile-toggle {
+            background-color: #28a745; /* Green color for profile button (default) */
+            padding: 8px 15px;
+            border-radius: 6px; /* Rounded corners */
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: background-color 0.2s ease, box-shadow 0.2s ease, transform 0.1s ease, color 0.2s ease; /* Smooth color/transform transition */
+        }
+        .nav-profile-toggle:hover {
+            background-color: rgba(255, 255, 255, 0.4); /* Bright white glow on hover */
+            color: black; /* Dark text for contrast on bright background */
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.8); /* Stronger shadow on hover */
+            transform: translateY(-1px); /* Slight lift */
+            text-decoration: none !important; /* Ensure no underline on hover */
+        }
+        .nav-item-dropdown.open .nav-profile-toggle, /* When dropdown is open */
+        .nav-profile-toggle.active-profile-toggle { /* When current page is part of this dropdown */
+            background-color: rgba(255, 255, 255, 0.4); /* Bright white glow for active state */
+            color: black; /* Dark text for contrast */
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.8); /* Active state glow */
+            text-decoration: none !important; /* Ensure no underline on active */
+        }
+        .nav-profile-toggle i.fa-caret-down {
+            margin-left: 5px; /* Space for caret icon */
+            transition: transform 0.3s ease; /* Smooth caret rotation */
+        }
+        .nav-item-dropdown.open .nav-profile-toggle i.fa-caret-down {
+            transform: rotate(180deg); /* Rotate caret when dropdown is open */
+        }
+        /* Ensure icons in nav-profile-toggle also change color on hover/active */
+        .nav-profile-toggle:hover i,
+        .nav-item-dropdown.open .nav-profile-toggle i,
+        .nav-profile-toggle.active-profile-toggle i {
+            color: black; /* Dark icons for contrast */
+        }
+
+        /* Dropdown Menu (for profile) */
+        .dropdown-menu {
+            position: absolute;
+            top: calc(100% + 10px); /* Position below the toggle, with a small gap */
+            right: 0; /* Align to the right of the toggle */
+            background-color: white;
+            border-radius: 8px; /* Rounded corners */
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15); /* Stronger shadow */
+            list-style: none;
+            padding: 10px 0;
+            min-width: 200px; /* Minimum width for readability */
+            opacity: 0; /* Hidden by default */
+            visibility: hidden; /* Hidden for accessibility */
+            transform: translateY(10px); /* Initial state for animation */
+            transition: opacity 0.3s ease, transform 0.3s ease, visibility 0.3s ease; /* Smooth appearance */
+            z-index: 1001; /* Ensure it appears above other content */
+        }
+
+        .nav-item-dropdown.open .dropdown-menu {
+            opacity: 1; /* Fully visible */
+            visibility: visible; /* Accessible */
+            transform: translateY(0); /* Final state for animation */
+        }
+
+        .dropdown-item {
+            color: #343a40; /* Dark text for items */
+            text-decoration: none;
+            padding: 10px 20px; /* Comfortable padding */
+            display: flex;
+            align-items: center;
+            gap: 12px; /* Space between icon and text */
+            font-size: 0.95rem;
+            font-weight: 500;
+            transition: background-color 0.2s ease, color 0.2s ease; /* Smooth hover effect */
+        }
+
+        .dropdown-item:hover,
+        .dropdown-item.active {
+            background-color: #f0f2f5; /* Light grey on hover/active */
+            color: #007bff; /* Primary blue text on hover/active */
+            text-decoration: none !important; /* Ensure no underline */
+        }
+
+        .dropdown-item .fas {
+            font-size: 1.1em; /* Slightly larger icon */
+            color: #6c757d; /* Default icon color */
+        }
+        .dropdown-item:hover .fas,
+        .dropdown-item.active .fas {
+            color: #007bff; /* Blue icon on hover/active */
+        }
+        .dropdown-item .fa-sign-out-alt {
+            color: #dc3545; /* Red for logout icon */
+        }
+        .dropdown-item:hover .fa-sign-out-alt {
+            color: #c82333; /* Darker red on hover */
+        }
+
+
+        .dropdown-divider {
+            height: 1px;
+            margin: 10px 0;
+            overflow: hidden;
+            background-color: #e9ecef;
+            border: 0;
+        }
+
+        /* Mobile Nav Toggler (Hamburger Icon) */
+        .nav-toggler {
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            display: none; /* Hidden by default on desktop */
+            flex-direction: column;
+            justify-content: space-around;
+            width: 30px;
+            height: 25px;
+            padding: 0;
+            z-index: 1002; /* Above navbar-nav when open */
+        }
+
+        .toggler-icon {
+            display: block;
+            width: 100%;
+            height: 3px;
+            background-color: white;
+            border-radius: 2px;
+            transition: all 0.3s linear;
+            transform-origin: 1px;
+        }
+
+        /* Animation for toggler icon when open */
+        .navbar.is-mobile-open .toggler-icon:nth-child(1) {
+            transform: rotate(45deg);
+        }
+
+        .navbar.is-mobile-open .toggler-icon:nth-child(2) {
+            opacity: 0;
+        }
+
+        .navbar.is-mobile-open .toggler-icon:nth-child(3) {
+            transform: rotate(-45deg);
+        }
+
+
+        /* Mobile Navigation Menu */
+        @media (max-width: 992px) {
+            .navbar {
+                padding: 0.8rem 1rem; /* Slightly less padding on tablet */
+            }
+            .navbar-container {
+                flex-wrap: wrap; /* Allow brand and toggler to wrap */
+            }
+
+            .navbar-nav {
+                flex-direction: column; /* Stack items vertically */
+                width: 100%; /* Full width */
+                background-color: #0056b3; /* Darker blue background for mobile menu */
+                position: absolute; /* Position relative to navbar */
+                top: 100%; /* Below the brand/toggler row */
+                left: 0;
+                padding: 1rem 0; /* Padding inside the menu */
+                height: auto; /* Height adjusts to content */
+                max-height: 0; /* Hidden by default */
+                overflow: hidden; /* Hide overflow content */
+                transition: max-height 0.4s ease-out, padding 0.4s ease-out; /* Smooth slide down/up */
+                box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+                border-top: 1px solid rgba(255, 255, 255, 0.1); /* Separator */
+            }
+
+            .navbar.is-mobile-open .navbar-nav {
+                max-height: 500px; /* Max height when open (adjust as needed for content) */
+                padding: 1.5rem 0; /* More padding when open */
+            }
+
+            .navbar-nav .nav-item {
+                margin: 0; /* Remove horizontal margin */
+                width: 100%; /* Full width for each item */
+                border-bottom: 1px solid rgba(255, 255, 255, 0.08); /* Item separator */
+            }
+            .navbar-nav .nav-item:last-child {
+                border-bottom: none;
+            }
+
+            .navbar-nav .nav-link,
+            .nav-button-link, /* Apply to nav-button-link as well */
+            .nav-profile-toggle { /* Apply to nav-profile-toggle as well */
+                background-color: transparent; /* Remove background on mobile menu */
+                border-radius: 0; /* Remove border-radius */
+                padding: 15px 20px; /* Larger clickable area */
+                font-size: 1.1rem; /* Larger font */
+                justify-content: flex-start; /* Align text to left */
+                width: 100%; /* Full width */
+                box-shadow: none !important; /* Remove shadows on mobile */
+                transform: none !important; /* Remove transforms on mobile */
+            }
+            
+            .navbar-nav .nav-link:hover,
+            .navbar-nav .nav-link.active,
+            .nav-button-link:hover,
+            .nav-button-link.active-nav-button,
+            .nav-profile-toggle:hover,
+            .nav-item-dropdown.open .nav-profile-toggle,
+            .nav-profile-toggle.active-profile-toggle {
+                background-color: rgba(255, 255, 255, 0.1); /* Standard mobile menu hover */
+                color: white;
+                text-decoration: none !important; /* Ensure no underline on mobile hover */
+            }
+            /* Mobile specific color change for nav-profile-toggle hover/active */
+            .nav-profile-toggle:hover,
+            .nav-item-dropdown.open .nav-profile-toggle,
+            .nav-profile-toggle.active-profile-toggle {
+                color: white; /* Keep white text on mobile hover */
+            }
+            /* Mobile specific color change for icons in nav-profile-toggle hover/active */
+            .nav-profile-toggle:hover i,
+            .nav-item-dropdown.open .nav-profile-toggle i,
+            .nav-profile-toggle.active-profile-toggle i {
+                color: white; /* Keep white icons on mobile hover */
+            }
+
+
+            /* Dropdown in Mobile Menu */
+            .nav-item-dropdown {
+                width: 100%; /* Important for dropdown items to fill width */
+            }
+            
+            .dropdown-menu {
+                position: static; /* Position normally within the flow */
+                width: 100%; /* Take full width of parent */
+                background-color: rgba(0, 0, 0, 0.15); /* Darker background for sub-menu */
+                box-shadow: none; /* No shadow */
+                border-radius: 0;
+                padding: 0; /* No initial padding */
+                opacity: 1; /* Always visible when parent is open */
+                visibility: visible;
+                transform: translateY(0); /* No transform */
+                max-height: 0; /* Hidden by default */
+                overflow: hidden;
+                transition: max-height 0.3s ease-out; /* Smooth expand/collapse */
+                border-top: 1px solid rgba(255, 255, 255, 0.05); /* Divider */
+            }
+
+            .nav-item-dropdown.open .dropdown-menu {
+                max-height: 300px; /* Expand height for mobile dropdown */
+                padding: 10px 0; /* Add padding when open */
+            }
+
+            .dropdown-menu .dropdown-item {
+                color: rgba(255, 255, 255, 0.8); /* Lighter text for sub-items */
+                padding: 10px 30px; /* Indent sub-items */
+                font-size: 1rem;
+            }
+            .dropdown-menu .dropdown-item:hover,
+            .dropdown-menu .dropdown-item.active {
+                background-color: rgba(255, 255, 255, 0.08); /* Hover/active background for sub-items */
+                color: white;
+                text-decoration: none !important; /* Ensure no underline on mobile hover */
+            }
+            .dropdown-menu .dropdown-item .fas {
+                color: rgba(255, 255, 255, 0.6); /* Lighter icon color */
+            }
+            .dropdown-menu .dropdown-item:hover .fas,
+            .dropdown-menu .dropdown-item.active .fas {
+                color: white;
+            }
+            .dropdown-menu .dropdown-divider {
+                background-color: rgba(255, 255, 255, 0.05);
+            }
+
+
+            /* Show toggler on mobile */
+            .nav-toggler {
+                display: flex;
+            }
+        }
+
+        /* Further Mobile Adjustments (Smaller screens) */
+        @media (max-width: 576px) {
+            .navbar-brand {
+                font-size: 1.6rem;
+            }
+            .navbar-brand i {
+                font-size: 1.3em;
+            }
+            .navbar-nav .nav-link,
+            .nav-button-link,
+            .nav-profile-toggle {
+                font-size: 1rem;
+                padding: 12px 15px;
+            }
+            .dropdown-menu .dropdown-item {
+                font-size: 0.9rem;
+                padding: 8px 20px;
+            }
+        }
+    </style>
+    {% block head_extra %}{% endblock %}
+</head>
+<body>
+    <nav class="navbar" id="mainNavbar">
+        <div class="navbar-container"> {# Using a specific container for the navbar content #}
+            {# --- Brand/Logo --- #}
+            <a href="{{ url_for('index') }}" class="navbar-brand">
+                <i class="fas fa-leaf"></i> <span class="brand-text">LeaveFlow</span> {# Span for better styling control #}
+            </a>
+
+            {# --- Mobile Nav Toggler --- #}
+            <button class="nav-toggler" type="button" aria-label="Toggle navigation" aria-expanded="false">
+                <span class="toggler-icon"></span>
+                <span class="toggler-icon"></span>
+                <span class="toggler-icon"></span>
+            </button>
+
+            {# --- Navigation Links --- #}
+            <ul class="navbar-nav">
+                {% if session.user_id %}
+                    {# User is Logged In #}
+
+                    {# === ADMIN SPECIFIC MAIN NAV LINKS (as buttons) === #}
+                    {% if session.user_role == 'admin' %}
+                        <li class="nav-item">
+                            <a href="{{ url_for('admin_dashboard') }}" class="nav-button-link {{ 'active-nav-button' if request.endpoint == 'admin_dashboard' else '' }}">
+                                <i class="fas fa-user-shield"></i> Admin Panel
+                            </a>
+                        </li>
+                        <li class="nav-item"> 
+                            <a href="{{ url_for('admin_comprehensive_report') }}" class="nav-button-link {{ 'active-nav-button' if request.endpoint == 'admin_comprehensive_report' else '' }}">
+                                <i class="fas fa-chart-pie"></i> Reports
+                            </a>
+                        </li>
+                    
+                    {# === REGULAR USER SPECIFIC MAIN NAV LINKS (as regular links) === #}
+                    {% else %}
+                        <li class="nav-item">
+                            <a href="{{ url_for('dashboard') }}" class="nav-button-link {{ 'active-nav-button' if request.endpoint == 'dashboard' else '' }}">
+                                <i class="fas fa-tachometer-alt"></i> Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ url_for('apply_leave') }}" class="nav-button-link {{ 'active-nav-button' if request.endpoint == 'apply_leave' else '' }}">
+                                <i class="fas fa-paper-plane"></i> Apply Leave
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ url_for('my_leaves') }}" class="nav-button-link {{ 'active-nav-button' if request.endpoint == 'my_leaves' else '' }}">
+                                <i class="fas fa-calendar-check"></i> My Leaves
+                            </a>
+                        </li>
+                    {% endif %}
+
+                    {# === NOTIFICATIONS LINK (common to both, as a button) === #}
+                    <li class="nav-item">
+                        <a href="{{ url_for('notifications_page') }}" class="nav-button-link {{ 'active-nav-button' if request.endpoint == 'notifications_page' else '' }}">
+                            <i class="fas fa-bell"></i> Notifications
+                            {# Notification Badge - Updated by JS in layout.html #}
+                            <span id="navbar-notif-count-badge" class="badge badge-danger" style="display: none;">0</span>
+                        </a>
+                    </li>
+
+                    {# === USER PROFILE DROPDOWN MENU === #}
+                    <li class="nav-item nav-item-dropdown"> {# Added nav-item for consistency #}
+                        {% set dropdown_active_endpoints_admin = ['admin_my_profile', 'admin_account_settings', 'manage_employees_page', 'admin_manage_leave_settings'] %}
+                        {% set dropdown_active_endpoints_user = ['profile', 'settings'] %}
+                        <a href="#" class="nav-profile-toggle 
+                            {% if session.user_role == 'admin' and request.endpoint in dropdown_active_endpoints_admin %}active-profile-toggle
+                            {% elif session.user_role != 'admin' and request.endpoint in dropdown_active_endpoints_user %}active-profile-toggle
+                            {% endif %}" 
+                            aria-haspopup="true" aria-expanded="false">
+                            <i class="fas fa-user-circle"></i> <span>Hi, {{ session.user_name }}</span> <i class="fas fa-caret-down"></i>
+                        </a>
+                        <ul class="dropdown-menu">
+                            {% if session.user_role == 'admin' %}
+                                <li>
+                                    <a href="{{ url_for('admin_my_profile') }}" class="dropdown-item {{ 'active' if request.endpoint == 'admin_my_profile' else '' }}">
+                                        <i class="fas fa-id-badge fa-fw"></i> Admin Profile
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="{{ url_for('admin_account_settings') }}" class="dropdown-item {{ 'active' if request.endpoint == 'admin_account_settings' else '' }}">
+                                        <i class="fas fa-user-cog fa-fw"></i> Admin Settings
+                                    </a>
+                                </li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <a href="{{ url_for('manage_employees_page') }}" class="dropdown-item {{ 'active' if request.endpoint == 'manage_employees_page' else '' }}">
+                                        <i class="fas fa-users-cog fa-fw"></i> Manage Employees
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="{{ url_for('admin_manage_leave_settings') }}" class="dropdown-item {{ 'active' if request.endpoint == 'admin_manage_leave_settings' else '' }}">
+                                        <i class="fas fa-cogs fa-fw"></i> Leave Policy & Holidays
+                                    </a>
+                                </li>
+                            {% else %}
+                                <li>
+                                    <a href="{{ url_for('profile') }}" class="dropdown-item {{ 'active' if request.endpoint == 'profile' else '' }}">
+                                        <i class="fas fa-user-edit fa-fw"></i> My Profile
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="{{ url_for('settings') }}" class="dropdown-item {{ 'active' if request.endpoint == 'settings' else '' }}">
+                                        <i class="fas fa-cog fa-fw"></i> Settings
+                                    </a>
+                                </li>
+                            {% endif %}
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a href="{{ url_for('logout') }}" class="dropdown-item"><i class="fas fa-sign-out-alt fa-fw"></i> Logout</a></li>
+                        </ul>
+                    </li>
+
+                {% else %}
+                    {# User is Logged Out #}
+                    <li class="nav-item">
+                        <a href="{{ url_for('login') }}" class="nav-link {{ 'active' if request.endpoint == 'login' else '' }}">
+                            <i class="fas fa-sign-in-alt"></i> Login
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{{ url_for('register') }}" class="nav-link {{ 'active' if request.endpoint == 'register' else '' }}">
+                            <i class="fas fa-user-plus"></i> Register
+                        </a>
+                    </li>
+                {% endif %}
+            </ul>
+        </div>{# End .navbar-container #}
+    </nav>
+
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer>
+        {# Optional Footer Content #}
+    </footer>
+
+    {# JavaScript for Mobile Toggler & Dropdown functionality #}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const toggler = document.querySelector('.nav-toggler');
+            const navbar = document.querySelector('.navbar'); 
+
+            if (toggler && navbar) {
+                const navUl = navbar.querySelector('.navbar-nav'); 
+
+                toggler.addEventListener('click', function(event) {
+                    event.stopPropagation(); 
+                    if (navUl) {
+                        navUl.classList.toggle('is-mobile-open');
+                    }
+                    navbar.classList.toggle('is-mobile-open'); 
+                    const isExpanded = navUl ? navUl.classList.contains('is-mobile-open') : navbar.classList.contains('is-mobile-open');
+                    toggler.setAttribute('aria-expanded', isExpanded);
+                });
+            }
+
+            const dropdownToggles = document.querySelectorAll('.nav-item-dropdown > a.dropdown-toggle, .nav-item-dropdown > a.nav-profile-toggle'); // Select both classes
+            dropdownToggles.forEach(function(toggle) {
+                toggle.addEventListener('click', function(event) {
+                    event.preventDefault();
+                    event.stopPropagation(); 
+                    
+                    const parentLi = this.closest('.nav-item-dropdown');
+                    if (parentLi) {
+                        // Close other open dropdowns
+                        document.querySelectorAll('.nav-item-dropdown.open').forEach(openDropdown => {
+                            if (openDropdown !== parentLi) {
+                                openDropdown.classList.remove('open');
+                                const otherToggle = openDropdown.querySelector('a.dropdown-toggle, a.nav-profile-toggle'); // Select both classes
+                                if(otherToggle) otherToggle.setAttribute('aria-expanded', 'false');
+                            }
+                        });
+                        // Toggle current dropdown
+                        parentLi.classList.toggle('open');
+                        this.setAttribute('aria-expanded', parentLi.classList.contains('open'));
+                    }
+                });
+            });
+
+            // Close mobile menu and dropdowns when clicking outside
+            document.addEventListener('click', function(event) {
+                const navUlForClose = navbar ? navbar.querySelector('.navbar-nav') : null;
+                if (navbar && navUlForClose && navUlForClose.classList.contains('is-mobile-open')) {
+                    const isClickInsideNavbar = navbar.contains(event.target);
+                    const isClickOnToggler = toggler ? toggler.contains(event.target) : false;
+                    if (!isClickInsideNavbar && !isClickOnToggler) {
+                        navUlForClose.classList.remove('is-mobile-open');
+                        navbar.classList.remove('is-mobile-open');
+                        if(toggler) toggler.setAttribute('aria-expanded', 'false');
+                    }
+                }
+
+                // Close all dropdowns if click is outside
+                document.querySelectorAll('.nav-item-dropdown.open').forEach(function(dropdown) {
+                    if (!dropdown.contains(event.target)) {
+                        dropdown.classList.remove('open');
+                        const toggle = dropdown.querySelector('a.dropdown-toggle, a.nav-profile-toggle'); // Select both classes
+                        if (toggle) {
+                            toggle.setAttribute('aria-expanded', 'false');
+                        }
+                    }
+                });
+            });
+
+            // Close mobile menu when a nav link is clicked (unless it's a dropdown toggle)
+            if (navbar) {
+                const navLinks = navbar.querySelectorAll('.navbar-nav a:not(.dropdown-toggle):not(.nav-profile-toggle)'); // Exclude both toggles
+                navLinks.forEach(link => {
+                    link.addEventListener('click', function() {
+                        const navUlToClose = navbar.querySelector('.navbar-nav');
+                        if (navUlToClose && navUlToClose.classList.contains('is-mobile-open')) {
+                                navUlToClose.classList.remove('is-mobile-open');
+                                navbar.classList.remove('is-mobile-open');
+                                if(toggler) toggler.setAttribute('aria-expanded', 'false');
+                        }
+                    });
+                });
+            }
+        });
+    </script>
+    {% block scripts_extra %}{% endblock %}
+</body>
+</html>

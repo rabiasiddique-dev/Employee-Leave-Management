@@ -1,0 +1,88 @@
+{% extends "layout.html" %}
+
+{% block head_extra %}
+    <style>
+        .form-container { max-width: 700px; margin: 30px auto; padding: 25px; background-color: #fff; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .page-title { text-align: center; margin-bottom: 25px; color: #337ab7; }
+        /* Add more styles from your apply_leave.html or profile.html if needed */
+        .form-group { margin-bottom: 1.5rem; }
+        .form-control-label { display: block; margin-bottom: .5rem; font-weight: 500; }
+        .form-control { display: block; width: 100%; padding: .375rem .75rem; font-size: 1rem; line-height: 1.5; color: #495057; background-color: #fff; background-clip: padding-box; border: 1px solid #ced4da; border-radius: .25rem; box-sizing: border-box; }
+        .is-invalid { border-color: #dc3545 !important; }
+        .invalid-feedback { display: none; width: 100%; margin-top: .25rem; font-size: .875em; color: #dc3545; }
+        .form-control.is-invalid + .invalid-feedback, .form-control.is-invalid ~ .invalid-feedback { display: block; }
+        .btn-primary { color: #fff; background-color: #007bff; border-color: #007bff; }
+        .btn-secondary { color: #fff; background-color: #6c757d; border-color: #6c757d; }
+    </style>
+{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <h1 class="page-title"><i class="fas fa-edit"></i> Edit Leave Application</h1>
+    <p class="text-muted text-center">
+        Editing leave for: <strong>{{ current_leave.leave_type | title }}</strong> from {{ current_leave.start_date }} to {{ current_leave.end_date }}.
+    </p>
+    <hr>
+    <form method="POST" action="{{ url_for('edit_leave_application', leave_id=leave_id) }}" novalidate>
+        {{ form.hidden_tag() }} {# CSRF token #}
+
+        <div class="form-group">
+            {{ form.leaveType.label(class="form-control-label") }}
+            {% if form.leaveType.errors %}
+                {{ form.leaveType(class="form-control is-invalid") }}
+                <div class="invalid-feedback">
+                    {% for error in form.leaveType.errors %}<span>{{ error }}</span><br>{% endfor %}
+                </div>
+            {% else %}
+                {{ form.leaveType(class="form-control") }}
+            {% endif %}
+            {# Note: Leave type select options would ideally come from a config or DB #}
+            {# For simplicity, if it's a StringField, user types it. If SelectField, options needed. #}
+            {# If using StringField and you want to restrict choices, provide a hint or use SelectField #}
+        </div>
+
+        <div class="form-group">
+            {{ form.startDate.label(class="form-control-label") }}
+            {% if form.startDate.errors %}
+                {{ form.startDate(class="form-control is-invalid", type="date") }}
+                <div class="invalid-feedback">
+                    {% for error in form.startDate.errors %}<span>{{ error }}</span><br>{% endfor %}
+                </div>
+            {% else %}
+                {{ form.startDate(class="form-control", type="date") }}
+            {% endif %}
+        </div>
+
+        <div class="form-group">
+            {{ form.endDate.label(class="form-control-label") }}
+            {% if form.endDate.errors %}
+                {{ form.endDate(class="form-control is-invalid", type="date") }}
+                <div class="invalid-feedback">
+                    {% for error in form.endDate.errors %}<span>{{ error }}</span><br>{% endfor %}
+                </div>
+            {% else %}
+                {{ form.endDate(class="form-control", type="date") }}
+            {% endif %}
+        </div>
+
+        <div class="form-group">
+            {{ form.reason.label(class="form-control-label") }}
+            {% if form.reason.errors %}
+                {{ form.reason(class="form-control is-invalid", rows="3", placeholder="Enter reason for leave...") }}
+                <div class="invalid-feedback">
+                    {% for error in form.reason.errors %}<span>{{ error }}</span><br>{% endfor %}
+                </div>
+            {% else %}
+                {{ form.reason(class="form-control", rows="3", placeholder="Enter reason for leave...") }}
+            {% endif %}
+        </div>
+        
+        <div class="form-group mt-4">
+            <button type="submit" name="{{ form.submit.name }}" class="btn btn-primary">
+                <i class="fas fa-save"></i> {{ form.submit.label.text }}
+            </button>
+            <a href="{{ url_for('my_leaves') }}" class="btn btn-secondary" style="margin-left: 10px;">Cancel Edit</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,511 @@
+{% extends "layout.html" %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block head_extra %}
+<style>
+    /* General Dashboard Container & Header */
+    .dashboard-container {
+        padding-top: 2.5rem; /* Slightly more top padding */
+        padding-bottom: 3rem; /* More bottom padding */
+    }
+
+    .page-title {
+        font-weight: 700;
+        font-size: 2.5rem; /* Even larger title */
+        color: #2c3e50;
+        margin-bottom: 0.8rem; /* Slightly more space below title */
+        letter-spacing: -0.5px; /* Tighter letter spacing for better readability */
+    }
+
+    .page-subtitle {
+        color: #7f8c8d;
+        font-size: 1.15rem; /* Slightly larger subtitle */
+        position: relative; /* For the custom separator line */
+        padding-bottom: 25px; /* Space for the line */
+        margin-bottom: 3rem; /* More space below subtitle and its line */
+    }
+
+    /* Custom gradient line under subtitle */
+    .page-subtitle::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 80px; /* Short, centered line */
+        height: 4px; /* Thicker line */
+        background: linear-gradient(to right, #3498db, #2ecc71); /* Gradient line */
+        border-radius: 2px;
+    }
+
+    /* Universal Card Styling for Dashboard */
+    .dashboard-card {
+        background-color: #fcfcfc; /* Very subtle off-white background */
+        border: none;
+        border-radius: 18px; 
+        box-shadow: 0 15px 60px rgba(0, 0, 0, 0.08); /* Softer, wider, deeper shadow */
+        padding: 2.2rem; 
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease; /* Smooth hover transition */
+    }
+
+    .dashboard-card:hover {
+        background-color: #ffffff; /* Slightly brighter on hover */
+        transform: translateY(-10px); /* More pronounced lift on hover */
+        box-shadow: 0 25px 70px rgba(0, 0, 0, 0.12); /* Enhanced shadow on hover */
+    }
+
+    .card-title {
+        font-size: 1.6rem;
+        font-weight: 700;
+        color: #34495e;
+        margin-bottom: 1.6rem;
+        padding-bottom: 1.2rem;
+        border-bottom: 1px solid #ecf0f1;
+        display: flex;
+        align-items: center;
+        position: relative; /* For the accent line */
+    }
+    
+    /* Accent line under card title */
+    .card-title::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 50px; /* Short line */
+        height: 3px; /* Thin line */
+        background: linear-gradient(to right, #3498db, #2ecc71); /* Gradient color */
+        border-radius: 2px;
+        transform: translateY(12px); /* Position it slightly below the border */
+        opacity: 0.7; /* Slightly transparent */
+    }
+
+    .card-title i {
+        color: #3498db;
+        margin-right: 18px;
+        font-size: 1.9rem;
+    }
+
+    /* Leave Balance Card Specifics */
+    .leave-balance-list {
+        list-style: none;
+        padding: 0;
+        flex-grow: 1;
+        margin-bottom: 1.8rem;
+    }
+    .leave-balance-list li {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1.1rem 0;
+        border-bottom: 1px solid #f2f6fc;
+        font-size: 1.1rem;
+        color: #555;
+    }
+    .leave-balance-list li:last-child {
+        border-bottom: none;
+    }
+    .leave-balance-list strong {
+        color: #2c3e50;
+        font-weight: 600;
+    }
+    .leave-balance-list .balance-days {
+        font-weight: 700;
+        color: #27ae60;
+        background-color: #e8f5e9;
+        padding: 6px 14px;
+        border-radius: 25px;
+        font-size: 1em;
+        min-width: 95px; /* Ensure consistent width for badges */
+        text-align: center;
+        box-shadow: inset 0 0 7px rgba(39, 174, 96, 0.25); /* More pronounced inner shadow */
+    }
+    
+    .btn-apply-leave {
+        background-color: #3498db;
+        border-color: #3498db;
+        color: white;
+        padding: 1rem 2.2rem; /* Adjusted padding */
+        font-size: 1.2rem; /* Adjusted font size */
+        font-weight: 600;
+        border-radius: 12px;
+        transition: background-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+        box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
+    }
+    .btn-apply-leave:hover {
+        background-color: #2980b9;
+        border-color: #2980b9;
+        transform: translateY(-3px);
+        box-shadow: 0 8px 20px rgba(52, 152, 219, 0.4);
+    }
+    .btn-apply-leave i {
+        margin-right: 14px; /* Adjusted icon spacing */
+    }
+
+    /* Upcoming Leaves & Public Holidays Lists */
+    .upcoming-leaves-list, .public-holidays-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        flex-grow: 1;
+    }
+    .upcoming-leaves-list li, .public-holidays-list li {
+        padding: 1rem; /* Full padding for better hover background */
+        border-bottom: 1px solid #f2f6fc;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 1rem;
+        transition: background-color 0.2s ease, border-radius 0.2s ease, transform 0.2s ease; /* Added transform to transition */
+    }
+    .upcoming-leaves-list li:last-child, .public-holidays-list li:last-child {
+        border-bottom: none;
+    }
+    .upcoming-leaves-list li:hover, .public-holidays-list li:hover {
+        background-color: #fbfdff; /* Very subtle hover background */
+        border-radius: 8px; /* Slight rounding on hover */
+        transform: translateX(5px); /* Slight slide right on hover */
+        cursor: pointer;
+    }
+    .leave-dates, .holiday-date {
+        display: block;
+        font-weight: 500;
+        color: #444;
+    }
+    .holiday-name {
+        font-weight: 600;
+        color: #2c3e50;
+    }
+    .d-block.text-muted {
+        font-size: 0.85em !important;
+    }
+
+    .leave-type-badge {
+        padding: 5px 12px;
+        border-radius: 18px;
+        font-size: 0.88em;
+        font-weight: 600;
+        color: white;
+        min-width: 80px; /* Consistent badge width */
+        text-align: center;
+        box-shadow: inset 0 0 7px rgba(0, 0, 0, 0.15); /* More pronounced inner shadow */
+    }
+    /* Specific badge colors (adjust as needed) */
+    .type-annual { background-color: #28a745; }
+    .type-sick { background-color: #dc3545; }
+    .type-casual { background-color: #ffc107; color: #333; }
+    .type-unpaid { background-color: #6c757d; }
+    .type-maternity { background-color: #6f42c1; }
+    .type-paternity { background-color: #007bff; }
+
+    .btn-outline-secondary {
+        border-color: #ced4da;
+        color: #6c757d;
+        font-weight: 500;
+        padding: 0.9rem 1.6rem; /* Adjusted padding */
+        font-size: 1.05rem; /* Adjusted font size */
+        border-radius: 10px;
+        transition: background-color 0.2s ease, color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+    .btn-outline-secondary:hover {
+        background-color: #e9ecef;
+        color: #495057;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+    .btn-outline-secondary i {
+        margin-right: 10px; /* Adjusted icon spacing */
+    }
+
+    .no-data-message {
+        color: #7f8c8d;
+        text-align: center;
+        padding: 2.5rem 0;
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+    }
+    .no-data-message i {
+        font-size: 3.5rem;
+        color: #bdc3c7;
+        margin-bottom: 1.2rem;
+    }
+    
+    /* Quick Actions Card */
+    .quick-actions-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        flex-grow: 1;
+    }
+    .quick-actions-list li a {
+        display: flex;
+        align-items: center;
+        padding: 1.1rem 15px; /* Default padding-left */
+        text-decoration: none;
+        color: #34495e;
+        border-bottom: 1px solid #f2f6fc;
+        transition: background-color 0.2s, color 0.2s, padding-left 0.2s, border-radius 0.2s;
+    }
+    .quick-actions-list li:last-child a {
+        border-bottom: none;
+    }
+    .quick-actions-list li a:hover {
+        background-color: #ecf0f1;
+        color: #3498db;
+        border-radius: 10px;
+        padding-left: 25px; /* More indent on hover */
+    }
+    .quick-actions-list li a i {
+        width: 35px;
+        font-size: 1.3rem;
+        margin-right: 18px;
+        color: #7f8c8d;
+    }
+    .quick-actions-list li a:hover i {
+        color: #3498db;
+    }
+
+    /* Responsive Adjustments */
+    @media (min-width: 992px) {
+        .dashboard-top-cards {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2.5rem;
+            margin-bottom: 2.5rem;
+        }
+        .dashboard-top-cards > .col-lg-4 {
+            margin-bottom: 0 !important;
+            padding-left: 0 !important;
+            padding-right: 0 !important;
+        }
+        .dashboard-bottom-row {
+            margin-top: 2.5rem;
+        }
+    }
+
+    @media (max-width: 991px) {
+        .dashboard-card {
+            padding: 1.8rem;
+        }
+        .card-title {
+            font-size: 1.4rem;
+            padding-bottom: 1rem;
+            margin-bottom: 1.2rem;
+        }
+        .card-title::after { /* Adjust accent line for smaller screens */
+            transform: translateY(8px);
+            width: 40px;
+        }
+        .card-title i {
+            font-size: 1.6rem;
+        }
+        .leave-balance-list li,
+        .upcoming-leaves-list li,
+        .public-holidays-list li,
+        .quick-actions-list li a {
+            font-size: 1rem;
+            padding: 0.9rem;
+        }
+        .leave-balance-list .balance-days {
+            font-size: 0.9em;
+            padding: 4px 10px;
+            min-width: 80px;
+        }
+        .leave-type-badge {
+            min-width: 70px;
+        }
+        .btn-apply-leave {
+            font-size: 1.1rem; /* Adjusted responsive font size */
+            padding: 0.8rem 1.8rem; /* Adjusted responsive padding */
+        }
+        .btn-outline-secondary {
+            font-size: 1rem; /* Adjusted responsive font size */
+            padding: 0.8rem 1.4rem; /* Adjusted responsive padding */
+        }
+        .quick-actions-list li a {
+            padding: 0.9rem 10px;
+        }
+        .quick-actions-list li a:hover {
+            padding-left: 20px;
+        }
+    }
+
+    @media (max-width: 767px) {
+        .page-title {
+            font-size: 2rem;
+        }
+        .page-subtitle {
+            font-size: 1.05rem;
+            margin-bottom: 2.5rem;
+            padding-bottom: 20px;
+        }
+        .page-subtitle::after {
+            width: 60px;
+            height: 3px;
+        }
+        .dashboard-card {
+            padding: 1.5rem;
+            border-radius: 12px;
+        }
+        .card-title {
+            font-size: 1.3rem;
+            padding-bottom: 0.8rem;
+            margin-bottom: 1rem;
+        }
+        .card-title::after { /* Adjust accent line for smaller screens */
+            transform: translateY(6px);
+            width: 30px;
+        }
+        .card-title i {
+            font-size: 1.4rem;
+            margin-right: 12px;
+        }
+        .leave-balance-list li,
+        .upcoming-leaves-list li,
+        .public-holidays-list li,
+        .quick-actions-list li a {
+            font-size: 0.95rem;
+            padding: 0.8rem;
+        }
+        .btn-apply-leave {
+            font-size: 1rem; /* Adjusted responsive font size */
+            padding: 0.7rem 1.5rem; /* Adjusted responsive padding */
+        }
+        .btn-outline-secondary {
+            font-size: 0.95rem; /* Adjusted responsive font size */
+            padding: 0.7rem 1.2rem; /* Adjusted responsive padding */
+        }
+        .no-data-message i {
+            font-size: 3rem;
+        }
+        .dashboard-top-cards > .col-md-6,
+        .dashboard-top-cards > .col-lg-4 {
+            margin-bottom: 1.5rem;
+        }
+        .dashboard-top-cards > .col-md-6:last-child {
+            margin-bottom: 0;
+        }
+        .quick-actions-list li a {
+            padding: 0.8rem 10px;
+        }
+        .quick-actions-list li a:hover {
+            padding-left: 18px;
+        }
+    }
+</style>
+{% endblock %}
+
+
+{% block content %}
+<div class="container dashboard-container">
+    <h1 class="page-title text-center">Welcome, {{ user.first_name }}!</h1>
+    <p class="page-subtitle text-center">Your personal leave management hub.</p>
+
+    <div class="row gy-4 dashboard-top-cards">
+        
+        <!-- Leave Balance Card -->
+        <div class="col-lg-4 col-md-6">
+            <div class="dashboard-card">
+                <h3 class="card-title"><i class="fas fa-calendar-check"></i> Leave Balance</h3>
+                <ul class="leave-balance-list">
+                    {% if user.leave_balance %}
+                        {% for type, balance in user.leave_balance.items() %}
+                        <li>
+                            <strong>{{ type|capitalize }}</strong> 
+                            <span class="balance-days">{{ balance }} days</span>
+                        </li>
+                        {% endfor %}
+                    {% else %}
+                        <li class="no-data-message" style="border-bottom: none; text-align: center;">
+                            <i class="fas fa-info-circle"></i>
+                            <p>No leave balance information available.</p>
+                        </li>
+                    {% endif %}
+                </ul>
+                <div class="d-grid mt-auto">
+                     <a href="{{ url_for('apply_leave') }}" class="btn btn-primary btn-lg btn-apply-leave">
+                        <i class="fas fa-plus-circle me-2"></i> Apply for New Leave
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Upcoming Approved Leaves Card -->
+        <div class="col-lg-4 col-md-6">
+            <div class="dashboard-card">
+                <h3 class="card-title"><i class="fas fa-plane-departure"></i> Upcoming Approved Leaves</h3>
+                {% if upcoming_leaves %}
+                    <ul class="upcoming-leaves-list">
+                        {% for leave in upcoming_leaves %}
+                        <li>
+                            <div>
+                                <span class="leave-dates">{{ leave.start_date | datetime_local('%d %b %Y') }} to {{ leave.end_date | datetime_local('%d %b %Y') }}</span>
+                                <span class="d-block text-muted" style="font-size: 0.9em;">({{ leave.days_count }} days)</span>
+                            </div>
+                            <span class="leave-type-badge type-{{ leave.leave_type|lower }}">{{ leave.leave_type }}</span>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    <a href="{{ url_for('my_leaves') }}" class="btn btn-outline-secondary mt-auto w-100">
+                        <i class="fas fa-history me-2"></i> View All My Leaves
+                    </a>
+                {% else %}
+                    <div class="no-data-message">
+                        <i class="fas fa-umbrella-beach"></i>
+                        <p>No upcoming approved leaves. Enjoy your work!</p>
+                        <a href="{{ url_for('my_leaves') }}" class="btn btn-outline-secondary mt-3">
+                            <i class="fas fa-history me-2"></i> View All My Leaves
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Public Holidays Card -->
+        <div class="col-lg-4 col-md-6">
+            <div class="dashboard-card">
+                <h3 class="card-title"><i class="fas fa-calendar-alt"></i> Public Holidays for {{ current_year }}</h3>
+                {% if public_holidays %}
+                    <ul class="public-holidays-list">
+                        {% for holiday in public_holidays %}
+                        <li>
+                            <span class="holiday-name">{{ holiday.name }}</span>
+                            <span class="holiday-date">{{ holiday.date | datetime_local('%d %b, %Y') }}</span>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <div class="no-data-message">
+                        <i class="fas fa-calendar-times"></i>
+                        <p>No public holidays added for this year yet.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        
+    </div>
+
+    <!-- Quick Actions Card (in a separate row below the top three) -->
+    <div class="row gy-4 dashboard-bottom-row">
+        <div class="col-lg-12 col-md-12">
+            <div class="dashboard-card">
+                <h3 class="card-title"><i class="fas fa-bolt"></i> Quick Actions</h3>
+                <ul class="quick-actions-list">
+                    <li><a href="{{ url_for('profile') }}"><i class="fas fa-user-edit"></i> Update My Profile</a></li>
+                    <li><a href="{{ url_for('company_policy_footer') }}"><i class="fas fa-file-contract"></i> Company Leave Policy</a></li>
+                    <li><a href="{{ url_for('help_support_footer') }}"><i class="fas fa-question-circle"></i> Help & Support</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

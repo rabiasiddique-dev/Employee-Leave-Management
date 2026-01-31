@@ -1,0 +1,638 @@
+{% extends "layout.html" %}
+
+{# === BLOCK 1: Title === #}
+{% block title %}Your Notifications{% endblock %}
+
+{# === BLOCK 2: Styles === #}
+{% block head_extra %}
+    {{ super() }}
+    <style>
+        /* General Styles (Consistent with admin-dashboard-container and layout) */
+        body {
+            font-family: 'Poppins', 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+            color: #344767; /* A professional dark grey */
+            background-color: #f8f9fa; /* Lighter background consistent with dashboard */
+        }
+
+        .admin-dashboard-container { /* Reusing container class from dashboard for consistent padding/shadow */
+            max-width: 1000px; /* Adjusted max-width for notifications */
+            margin: 30px auto; /* Increased top/bottom margin */
+            padding: 30px; /* Increased padding */
+            background-color: #ffffff;
+            border-radius: 12px; /* More rounded */
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05); /* Softer, slightly larger shadow */
+            position: relative; /* Needed for absolute positioning of back button */
+            padding-bottom: 90px; /* Space for the back button at the bottom */
+            border: 1px solid #e9edf2; /* Subtle border */
+        }
+
+        /* Page Header & Titles - CENTERED */
+        .page-header-centered { /* Reusing the centered header structure */
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        .page-main-title { 
+            font-family: 'Poppins', sans-serif !important; 
+            display: flex; 
+            align-items: center; 
+            gap: 15px; /* More space */
+            color: #2b3b52; /* Deeper color for titles */
+            font-size: 2.5rem; /* Larger font size */
+            font-weight: 700; /* Bolder */
+            margin-bottom: 0.5rem; 
+            justify-content: center; /* For centering content within flex container */
+        }
+        .page-main-title i { 
+            color: #007bff; /* Primary blue for icons */
+            font-size: 2.8rem; /* Larger title icon */
+        }
+        .page-subtitle { 
+            font-size: 1.2rem; 
+            color: #67748e; 
+            max-width: 800px; /* Limit width for readability */
+            margin: 0.5rem auto 0; /* Center subtitle */
+        }
+        
+        /* Report Section (Consistent with dashboard sections, used for notification list) */
+        .admin-section { /* This class is now implied by the container */
+            background-color: #fff; /* Consistent with container for this page's design */
+            /* padding: 30px; -> removed as container already has it */
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            margin-bottom: 35px;
+            border: 1px solid #e9edf2;
+        }
+
+        /* Notifications Specific Styles */
+        .notifications-container { /* Renamed from original `notifications-container` to `admin-dashboard-container` and using its styles */
+            /* Styles inherited from .admin-dashboard-container above */
+        }
+        .notifications-header-area {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #f0f2f5;
+        }
+        .notifications-header-area h2 { 
+            margin: 0;
+            color: #344767;
+            font-size: 1.8rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .notifications-header-area h2 i {
+            font-size: 2rem;
+            color: #f2a74c; /* Orange bell for notifications */
+        }
+
+        .notification-item { 
+            background-color: #ffffff; 
+            border: 1px solid #e9ecef; /* Lighter border */
+            margin-bottom: 15px; /* More space */
+            padding: 20px 25px; /* Increased padding */
+            border-radius: 10px; /* More rounded */
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04); /* Subtle shadow */
+        }
+        .notification-item:not(.unread) { 
+            opacity: 0.8; /* Read notifications are slightly faded */
+            background-color: #fcfdfe; /* Very light blue for read */
+        }
+        .notification-item:not(.unread):hover { 
+            opacity: 1; 
+            background-color: #f6f9fc; /* Light hover for read */
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08); /* Stronger shadow on hover */
+        }
+        .notification-item.unread { 
+            background-color: #e6f7ff; /* Vibrant light blue for unread */
+            font-weight: 600; /* Bolder for unread */
+            border-left: 6px solid #007bff; /* Stronger blue left border */
+            padding-left: 20px; 
+            box-shadow: 0 4px 15px rgba(0, 123, 255, 0.1); /* More prominent shadow for unread */
+            color: #344767; /* Ensures good contrast */
+        }
+        .notification-item.unread:hover {
+            background-color: #dbeeff; /* Slightly darker light blue on hover for unread */
+            box-shadow: 0 6px 20px rgba(0, 123, 255, 0.15);
+        }
+
+        .notification-message { 
+            flex-grow: 1; 
+            margin-right: 25px; /* More space */
+            font-size: 1rem; /* Slightly larger text */
+            color: #495057; 
+            line-height: 1.5;
+        }
+        .notification-item.unread .notification-message {
+            color: #2b3b52; /* Darker text for unread to stand out */
+        }
+
+        .timestamp { 
+            font-size: 0.85em; /* Slightly larger */
+            color: #6c757d; 
+            display: block; 
+            margin-top: 8px; /* More space from message */
+        }
+        .notification-link { 
+            color: #007bff; /* Primary blue for links */
+            text-decoration: none; 
+            font-weight: 500; 
+            margin-left: 10px; /* More space */
+        }
+        .notification-link:hover { 
+            text-decoration: underline; 
+            color: #0056b3; /* Darker blue on hover */
+        }
+        .notification-actions { 
+            display: flex; 
+            align-items: center; 
+            gap: 12px; /* More space between buttons */
+            flex-shrink: 0; /* Prevents actions from shrinking */
+        }
+
+        /* Buttons (Consistent with other admin pages) */
+        .btn {
+            padding: 10px 18px; 
+            border: none;
+            border-radius: 8px; 
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: background-color 0.2s ease-in-out, box-shadow 0.2s ease, transform 0.1s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px; 
+            text-decoration: none; 
+            white-space: nowrap; 
+        }
+        .btn i { margin-right: 8px; font-size: 0.9em; }
+
+        .btn-primary { background-color: #007bff; color: white; box-shadow: 0 2px 8px rgba(0, 123, 255, 0.2); }
+        .btn-primary:hover { background-color: #0056b3; box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3); transform: translateY(-1px); }
+        .btn-success { background-color: #28a745; color: white; box-shadow: 0 2px 8px rgba(40, 167, 69, 0.2); }
+        .btn-success:hover { background-color: #218838; box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3); transform: translateY(-1px); }
+        .btn-danger { background-color: #dc3545; color: white; box-shadow: 0 2px 8px rgba(220, 53, 69, 0.2); }
+        .btn-danger:hover { background-color: #c82333; box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3); transform: translateY(-1px); }
+        .btn-secondary { background-color: #6c757d; color: white; box-shadow: 0 2px 8px rgba(108, 117, 125, 0.2); }
+        .btn-secondary:hover { background-color: #5a6268; box-shadow: 0 4px 12px rgba(108, 117, 125, 0.3); transform: translateY(-1px); }
+        .btn-info { background-color: #17a2b8; color: white; box-shadow: 0 2px 8px rgba(23, 162, 184, 0.2); }
+        .btn-info:hover { background-color: #138496; box-shadow: 0 4px 12px rgba(23, 162, 184, 0.3); transform: translateY(-1px); }
+
+        .btn-sm { /* Smaller buttons for 'Mark as Read' and 'Delete' */
+            padding: 7px 14px; 
+            font-size: 0.9rem;
+            gap: 6px;
+        }
+        .btn-sm i { font-size: 0.9em; }
+
+        .mark-read-btn {
+            background-color: #e9f2f9; /* Light background for 'Mark as Read' */
+            color: #007bff; /* Primary blue text */
+            border: 1px solid #d0e4f7;
+        }
+        .mark-read-btn:hover {
+            background-color: #dbeeff;
+            box-shadow: 0 2px 8px rgba(0, 123, 255, 0.1);
+        }
+
+        .delete-notification-btn {
+            background: none; 
+            border: none; 
+            color: #dc3545; /* Red for delete */
+            font-size: 1.2rem; /* Larger icon */
+            cursor: pointer; 
+            padding: 8px; /* Larger clickable area */
+            border-radius: 50%;
+            transition: color 0.2s, background-color 0.2s, transform 0.2s;
+            visibility: hidden; /* Hide by default */
+            opacity: 0; /* For smooth fade in */
+        }
+        .notification-item:hover .delete-notification-btn { 
+            visibility: visible; 
+            opacity: 0.8; /* Fade in on hover */
+        }
+        .delete-notification-btn:hover { 
+            opacity: 1; 
+            color: #c82333; 
+            background-color: #f8d7da; /* Light red background on hover */
+            transform: scale(1.1);
+        }
+        .delete-notification-btn:active {
+            transform: scale(0.9);
+        }
+
+        .mark-all-btn-container { 
+            margin-bottom: 20px; 
+            text-align: right; 
+        }
+        /* Adjusted Mark All as Read button to be consistent */
+        #markAllReadBtn {
+            padding: 10px 20px;
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(108, 117, 125, 0.2);
+            transition: background-color 0.2s ease, box-shadow 0.2s ease, transform 0.1s ease;
+        }
+        #markAllReadBtn:disabled {
+            background-color: #e9ecef;
+            color: #adb5bd;
+            cursor: not-allowed;
+            box-shadow: none;
+            transform: none;
+        }
+        #markAllReadBtn:hover:not(:disabled) {
+            background-color: #5a6268;
+            box-shadow: 0 4px 12px rgba(108, 117, 125, 0.3);
+            transform: translateY(-1px);
+        }
+
+
+        .no-notifications { 
+            text-align: center; 
+            padding: 60px 20px; /* More padding */
+            color: #6c757d; 
+            font-size: 1.2rem; 
+            border: 2px dashed #ced4da; /* Dashed border */
+            border-radius: 12px; /* More rounded */
+            margin-top: 30px; 
+            background-color: #f8f9fa; 
+            box-shadow: inset 0 1px 5px rgba(0, 0, 0, 0.03); /* Subtle inset shadow */
+        }
+        .no-notifications i { 
+            font-size: 4em; /* Larger icon */
+            display: block; 
+            margin-bottom: 25px; /* More space */
+            color: #28a745; /* Green for "all caught up" */
+            opacity: 0.8;
+        }
+        .no-notifications p {
+            font-weight: 500;
+            color: #495057;
+            margin-bottom: 0;
+        }
+        
+        /* Pagination Styles (Flask-Paginate classes) */
+        .pagination-container { 
+            margin-top: 30px; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center;
+            flex-wrap: wrap; /* Allow wrapping */
+            gap: 5px; /* Space between items */
+        }
+        .pagination { 
+            display: flex; 
+            padding-left: 0; 
+            list-style: none; 
+            border-radius: .25rem; 
+            margin-bottom: 0;
+        }
+        .page-item {
+            margin: 0 2px; /* Small margin between page items */
+        }
+        .page-item.active .page-link { 
+            z-index: 1; 
+            color: #fff; 
+            background-color: #007bff; 
+            border-color: #007bff; 
+            box-shadow: 0 2px 5px rgba(0, 123, 255, 0.2);
+        }
+        .page-item.disabled .page-link { 
+            color: #adb5bd; /* Lighter grey for disabled */
+            pointer-events: none; 
+            cursor: not-allowed; 
+            background-color: #f8f9fa; /* Very light background */
+            border-color: #e9ecef;
+            box-shadow: none;
+        }
+        .page-link { 
+            position: relative; 
+            display: block; 
+            padding: 10px 15px; /* More padding */
+            line-height: 1.25; 
+            color: #007bff; 
+            background-color: #fff; 
+            border: 1px solid #dee2e6; 
+            border-radius: 8px; /* Consistent rounded corners */
+            transition: all 0.2s ease;
+            font-size: 0.95rem;
+            font-weight: 500;
+        }
+        .page-link:hover:not(:disabled) { 
+            color: #0056b3; 
+            text-decoration: none; 
+            background-color: #e9ecef; 
+            border-color: #c7d2de;
+            box-shadow: 0 1px 5px rgba(0, 0, 0, 0.08);
+        }
+
+        /* Back to Dashboard Button (Consistent) */
+        .back-to-dashboard-btn-container {
+            position: absolute;
+            bottom: 30px; /* Distance from the bottom of .admin-dashboard-container */
+            left: 30px; /* Distance from the left of .admin-dashboard-container */
+            padding-top: 0; 
+            border-top: none; 
+            z-index: 10; 
+        }
+
+        /* === RESPONSIVE ADJUSTMENTS === */
+        @media (max-width: 992px) {
+            .admin-dashboard-container { padding: 25px; margin: 25px auto; }
+            .page-main-title { font-size: 2.2rem; gap: 10px; }
+            .page-main-title i { font-size: 2.5rem; }
+            .page-subtitle { font-size: 1.1rem; margin-bottom: 30px; }
+            .notifications-header-area h2 { font-size: 1.6rem; }
+            .notifications-header-area h2 i { font-size: 1.8rem; }
+            .notification-item { padding: 15px 20px; margin-bottom: 12px; border-radius: 8px; }
+            .notification-item.unread { padding-left: 15px; }
+            .notification-message { font-size: 0.95rem; margin-right: 15px; }
+            .timestamp { font-size: 0.8em; margin-top: 6px; }
+            .notification-link { margin-left: 8px; }
+            .notification-actions { gap: 10px; }
+            .btn-sm { padding: 6px 12px; font-size: 0.88rem; }
+            .delete-notification-btn { font-size: 1.1rem; padding: 6px; }
+            #markAllReadBtn { padding: 8px 15px; font-size: 0.95rem; }
+            .no-notifications { padding: 50px 20px; }
+            .no-notifications i { font-size: 3.5em; }
+            .no-notifications p { font-size: 1.2rem; }
+            .pagination-container { margin-top: 25px; }
+            .page-link { padding: 8px 12px; font-size: 0.9rem; }
+            .back-to-dashboard-btn-container { bottom: 20px; left: 20px; }
+        }
+
+        @media (max-width: 768px) {
+            .admin-dashboard-container {
+                margin: 15px auto;
+                padding: 15px;
+                padding-bottom: 80px; /* Adjust for mobile back button */
+            }
+            .page-header-centered .page-main-title {
+                font-size: 2rem;
+                gap: 10px;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                text-align: center;
+            }
+            .page-header-centered .page-main-title i { margin-bottom: 5px; font-size: 2.2rem; }
+            .page-header-centered .page-subtitle {
+                font-size: 1rem;
+                text-align: center;
+                margin-bottom: 25px;
+            }
+            .notifications-header-area { flex-direction: column; align-items: flex-start; gap: 15px; margin-bottom: 20px; }
+            .notifications-header-area h2 { font-size: 1.4rem; }
+            .notifications-header-area h2 i { font-size: 1.6rem; }
+            .mark-all-btn-container { text-align: left; width: 100%; }
+            #markAllReadBtn { width: 100%; padding: 8px 15px; font-size: 0.9rem; }
+
+            .notification-item { flex-direction: column; align-items: flex-start; padding: 15px; margin-bottom: 10px; }
+            .notification-message { margin-right: 0; margin-bottom: 10px; font-size: 0.9rem; }
+            .timestamp { margin-top: 5px; }
+            .notification-actions { width: 100%; justify-content: flex-start; }
+            .btn-sm { padding: 5px 10px; font-size: 0.85rem; }
+            .delete-notification-btn { font-size: 1rem; padding: 5px; visibility: visible !important; opacity: 1 !important; } /* Always visible on small screens */
+
+            .no-notifications { padding: 40px 15px; }
+            .no-notifications i { font-size: 3em; }
+            .no-notifications p { font-size: 1.1rem; }
+
+            .pagination-container { margin-top: 20px; flex-wrap: wrap; gap: 8px; }
+            .page-item { margin: 0 1px; }
+            .page-link { padding: 6px 10px; font-size: 0.85rem; }
+
+            /* Mobile specific positioning for Back to Dashboard button */
+            .back-to-dashboard-btn-container {
+                position: static; 
+                text-align: center; 
+                margin-top: 25px; 
+                padding-top: 20px; 
+                border-top: 1px solid #e9ecef; 
+                left: auto; bottom: auto; 
+            }
+        }
+
+        @media (max-width: 480px) {
+            .admin-dashboard-container { padding: 10px; margin: 10px auto; padding-bottom: 70px; }
+            .page-header-centered .page-main-title { font-size: 1.8rem; }
+            .page-header-centered .page-main-title i { font-size: 2rem; }
+            .page-header-centered .page-subtitle { font-size: 0.9rem; margin-bottom: 20px; }
+            .notifications-header-area h2 { font-size: 1.2rem; }
+            .notifications-header-area h2 i { font-size: 1.4rem; }
+            .notification-item { padding: 10px 15px; font-size: 0.85rem; }
+            .notification-item.unread { padding-left: 10px; }
+            .notification-message { font-size: 0.85rem; }
+            .timestamp { font-size: 0.75em; }
+            .btn-sm { padding: 4px 8px; font-size: 0.8rem; }
+            .delete-notification-btn { font-size: 0.9rem; padding: 4px; }
+            #markAllReadBtn { padding: 8px 12px; font-size: 0.85rem; }
+            .no-notifications { padding: 30px 10px; }
+            .no-notifications i { font-size: 2.5em; }
+            .no-notifications p { font-size: 1rem; }
+            .page-link { padding: 5px 8px; font-size: 0.8rem; }
+        }
+    </style>
+{% endblock %}
+
+
+{# === BLOCK 3: Content === #}
+{% block content %}
+    <div class="admin-dashboard-container"> {# Using the main container for consistent design #}
+        <div class="page-header-centered">
+            <h1 class="page-main-title"><i class="fas fa-bell"></i> Your Notifications</h1>
+            <p class="page-subtitle">Stay updated with your leave requests and system alerts.</p>
+        </div>
+
+        <div class="notifications-header-area">
+            <h2>Notifications</h2> {# This is the sub-title for the list #}
+            {% if notifications %}
+                <button id="markAllReadBtn" class="btn btn-secondary">
+                    <i class="fas fa-check-double"></i> Mark All as Read
+                </button>
+            {% endif %}
+        </div>
+        
+        {% if notifications %}
+            <div id="notificationsList">
+                {% for notification in notifications %}
+                <div class="notification-item {% if not notification.is_read %}unread{% endif %}" data-id="{{ notification._id }}">
+                    <div class="notification-message">
+                        {{ notification.message | safe }} {# Assuming message might contain HTML, use safe filter #}
+                        {% if notification.link %}<a href="{{ notification.link }}" class="notification-link">(View Details)</a>{% endif %}
+                        <span class="timestamp">
+                            Received: {{ notification.created_at | datetime_local('%d %b %Y, %I:%M %p') }}
+                        </span>
+                    </div>
+                    <div class="notification-actions">
+                        {% if not notification.is_read %}
+                        <button class="mark-read-btn btn btn-sm" data-id="{{ notification._id }}">
+                            <i class="fas fa-envelope-open"></i> Mark as Read
+                        </button>
+                        {% endif %}
+                        <button class="delete-notification-btn" title="Delete Notification" data-id="{{ notification._id }}">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- ===== PAGINATION CODE ===== -->
+            {% if pagination and pagination.total > pagination.per_page %}
+            <div class="pagination-container">
+                {{ pagination.links | safe }}
+            </div>
+            {% endif %}
+            <!-- =========================== -->
+
+        {% else %}
+            <div class="no-notifications">
+                <i class="fas fa-check-circle"></i>
+                <p>You're all caught up! No notifications to show.</p>
+            </div>
+        {% endif %}
+
+        <!-- Back to Dashboard Button -->
+        <div class="back-to-dashboard-btn-container">
+            <a href="{{ url_for('admin_dashboard') }}" class="btn btn-info"><i class="fas fa-arrow-left"></i> Back to Dashboard</a>
+        </div>
+    </div>
+{% endblock %}
+
+
+{# === BLOCK 4: JavaScript === #}
+{% block scripts_extra %}
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const notificationsList = document.getElementById('notificationsList');
+        const markAllReadBtn = document.getElementById('markAllReadBtn');
+
+        if (notificationsList) {
+            notificationsList.addEventListener('click', function(event) {
+                const markReadButton = event.target.closest('.mark-read-btn');
+                const deleteButton = event.target.closest('.delete-notification-btn');
+
+                if (markReadButton) {
+                    const notificationId = markReadButton.dataset.id;
+                    markNotificationAsRead(notificationId, markReadButton);
+                } else if (deleteButton) {
+                    const notificationId = deleteButton.dataset.id;
+                    if (confirm('Are you sure you want to delete this notification?')) {
+                        deleteNotification(notificationId, deleteButton);
+                    }
+                }
+            });
+        }
+
+        if (markAllReadBtn) {
+            markAllReadBtn.addEventListener('click', () => markAllNotificationsAsRead(markAllReadBtn));
+            checkMarkAllButtonState(); /* Initial state check for the button */
+        }
+    }); 
+
+    function markNotificationAsRead(notificationId, buttonElement) {
+        buttonElement.disabled = true;
+        buttonElement.innerHTML = '<i class="fas fa-spinner fa-spin"></i>'; // Spinner for processing
+        fetch(`/notifications/mark_read/${notificationId}`, { method: 'POST' })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const listItem = buttonElement.closest('.notification-item');
+                if (listItem) { // Ensure listItem exists before manipulating
+                    listItem.classList.remove('unread');
+                    listItem.style.opacity = '0.8';
+                    const originalMarkReadBtn = listItem.querySelector('.mark-read-btn');
+                    if (originalMarkReadBtn) originalMarkReadBtn.remove(); // Remove button from DOM
+                }
+                if (typeof window.updateNavbarNotificationCount === 'function') {
+                    window.updateNavbarNotificationCount(); // Update count in navbar
+                }
+                checkMarkAllButtonState(); // Re-check global mark all button state
+            } else { throw new Error(data.message || 'Failed to mark as read.'); }
+        }).catch(error => {
+            alert(`An error occurred: ${error.message}`);
+            buttonElement.disabled = false; 
+            buttonElement.innerHTML = '<i class="fas fa-envelope-open"></i> Mark as Read'; // Restore button
+        });
+    }
+
+    function deleteNotification(notificationId, buttonElement) {
+        const listItem = buttonElement.closest('.notification-item');
+        if (!listItem) return; // Exit if list item not found
+
+        listItem.style.opacity = '0.3'; // Fade out initially
+
+        fetch(`/notifications/delete/${notificationId}`, { method: 'POST' })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Animate removal
+                listItem.style.transition = 'opacity 0.3s ease, height 0.3s ease, margin 0.3s ease, padding 0.3s ease';
+                listItem.style.opacity = '0';
+                listItem.style.height = '0';
+                listItem.style.paddingTop = '0';
+                listItem.style.paddingBottom = '0';
+                listItem.style.marginBottom = '0';
+                listItem.style.borderWidth = '0'; // Hide border
+                setTimeout(() => {
+                    listItem.remove();
+                    if (typeof window.updateNavbarNotificationCount === 'function') {
+                        window.updateNavbarNotificationCount(); // Update count in navbar
+                    }
+                    checkMarkAllButtonState(); // Re-check global mark all button state
+                    // If no notifications left on the current page, reload to show empty state or next page
+                    if (document.querySelectorAll('.notification-item').length === 0) {
+                        location.reload(); 
+                    }
+                }, 300); // Wait for animation
+            } else { throw new Error(data.message || 'Failed to delete.'); }
+        }).catch(error => {
+            alert(`An error occurred: ${error.message}`);
+            listItem.style.opacity = '1'; // Restore opacity if error
+        });
+    }
+
+    function markAllNotificationsAsRead(buttonElement) {
+        buttonElement.disabled = true;
+        buttonElement.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+        fetch(`/notifications/mark_all_read`, { method: 'POST' })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success && data.modified_count > 0) {
+                document.querySelectorAll('.notification-item.unread').forEach(item => {
+                    item.classList.remove('unread');
+                    item.style.opacity = '0.8';
+                    const btn = item.querySelector('.mark-read-btn');
+                    if (btn) btn.remove(); // Remove button from DOM
+                });
+                if (typeof window.updateNavbarNotificationCount === 'function') {
+                    window.updateNavbarNotificationCount(); 
+                }
+            }
+        }).catch(error => {
+            alert(`An error occurred: ${error.message}`);
+        }).finally(() => {
+             checkMarkAllButtonState(); // Always re-check state
+        });
+    }
+
+    function checkMarkAllButtonState() {
+        const markAllBtn = document.getElementById('markAllReadBtn');
+        if (markAllBtn) {
+            const unreadCount = document.querySelectorAll('.notification-item.unread').length;
+            markAllBtn.disabled = (unreadCount === 0);
+            markAllBtn.innerHTML = unreadCount === 0 ? '<i class="fas fa-check-double"></i> All Read' : '<i class="fas fa-check-double"></i> Mark All as Read';
+        }
+    }
+    </script>
+{% endblock %}

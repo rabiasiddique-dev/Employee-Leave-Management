@@ -1,0 +1,107 @@
+{% extends "layout.html" %}
+
+{% block head_extra %}
+<style>
+    .admin-dashboard-container { 
+        max-width: 900px; 
+        margin: 30px auto; 
+        padding: 25px; 
+        background-color: #fff; 
+        border-radius: 8px; 
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1); 
+    }
+    .page-title { 
+        font-size: 2.2em; 
+        color: #2c3e50; 
+        margin-bottom: 10px; 
+        font-weight: 600; 
+        text-align: center; 
+        border-bottom: 2px solid #3498db; 
+        padding-bottom: 15px;
+    }
+    .page-subtitle { 
+        font-size: 1.15em; 
+        color: #7f8c8d; 
+        margin-bottom: 35px; 
+        text-align: center; 
+    }
+    .list-group {
+        margin-top: 20px;
+    }
+    .list-group-item { 
+        margin-bottom: 15px; 
+        border-radius: .375rem !important;
+        border: 1px solid #e0e7ff; 
+        padding: 1.25rem 1.5rem; 
+        transition: all 0.2s ease-in-out; 
+        background-color: #f9faff; 
+        display: flex; 
+        align-items: center; 
+        text-decoration: none; /* Ensure links don't have underline by default */
+    }
+    .list-group-item:hover {
+        background-color: #eef4ff; 
+        border-color: #c3daff;
+        transform: translateY(-2px); 
+        box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+    }
+    .list-group-item-action i.fa-fw { 
+        margin-right: 12px; 
+        color: #3498db; 
+        font-size: 1.3em; 
+        width: 25px; 
+        text-align: center;
+        vertical-align: middle; 
+    }
+    .list-group-item strong {
+        font-size: 1.1em; 
+        color: #2980b9; 
+        display: block; 
+        margin-bottom: 3px;
+    }
+    .list-group-item .text-muted { 
+        font-size: 0.9em; 
+        display: block; 
+        color: #566573 !important; 
+    }
+    .report-item-content {
+        flex-grow: 1; 
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="admin-dashboard-container">
+    <h1 class="page-title"><i class="fas fa-chart-pie"></i> Leave Reports & Analytics</h1>
+    <p class="page-subtitle">View a comprehensive summary of all leave metrics.</p>
+
+    <div class="list-group">
+        <a href="{{ url_for('admin_comprehensive_report') }}" class="list-group-item list-group-item-action">
+            <i class="fas fa-file-alt fa-fw"></i> 
+            <div class="report-item-content">
+                <strong>Comprehensive Leave Report</strong>
+                <small class="text-muted d-block">View employee consumption, leave type usage, and trends in one place for a selected period.</small>
+            </div>
+        </a>
+        
+        {# Individual report links REMOVED or COMMENTED OUT as per requirement to consolidate #}
+        {# 
+        <a href="{{ url_for('admin_report_employee_consumption') }}" class="list-group-item list-group-item-action">
+            <i class="fas fa-users fa-fw"></i> 
+            <div class="report-item-content">
+                <strong>Employee-wise Consumption (Detailed)</strong>
+                <small class="text-muted d-block">Detailed breakdown of leave days taken by each employee, including type summaries.</small>
+            </div>
+        </a>
+
+        <a href="{{ url_for('admin_report_leave_type_usage') }}" class="list-group-item list-group-item-action">
+            <i class="fas fa-tags fa-fw"></i> 
+            <div class="report-item-content">
+                <strong>Leave Type-wise Usage (Summary)</strong>
+                <small class="text-muted d-block">Overall analysis of how different leave types are being utilized across the organization.</small>
+            </div>
+        </a>
+        #}
+    </div>
+</div>
+{% endblock %}

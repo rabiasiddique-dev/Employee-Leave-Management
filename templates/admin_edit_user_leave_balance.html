@@ -1,0 +1,240 @@
+{% extends "layout.html" %}
+
+{% block head_extra %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+<style>
+    :root {
+        --primary-color: #007bff;
+        --secondary-color: #6c757d;
+        --light-color: #f8f9fa;
+        --dark-color: #343a40;
+        --font-family-sans-serif: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+        --border-radius: 0.3rem;
+        --box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+        --input-padding-y: 0.5rem;
+        --input-padding-x: 0.75rem;
+    }
+
+    body {
+        font-family: var(--font-family-sans-serif);
+        line-height: 1.6;
+        color: var(--dark-color);
+        background-color: #f4f7f6;
+    }
+
+    .edit-balance-page-container {
+        max-width: 700px;
+        margin: 30px auto;
+        padding: 25px 30px;
+        background-color: #fff;
+        border-radius: var(--border-radius);
+        box-shadow: var(--box-shadow);
+    }
+
+    .edit-balance-page-header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 25px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid #e9ecef;
+    }
+
+    .edit-balance-page-header i {
+        font-size: 1.8em;
+        color: var(--primary-color);
+        margin-right: 15px;
+    }
+
+    .edit-balance-page-header h1 {
+        font-size: 1.6em; /* Slightly smaller for this specific page */
+        font-weight: 600;
+        margin: 0;
+        color: var(--dark-color);
+    }
+    .edit-balance-page-header .employee-name {
+        font-weight: normal;
+        color: var(--primary-color);
+    }
+     .edit-balance-page-header p {
+        font-size: 0.9em;
+        color: var(--secondary-color);
+        margin-top: 5px;
+    }
+
+    .balance-form-section {
+        margin-bottom: 20px;
+    }
+
+    .leave-balance-entry {
+        display: grid;
+        grid-template-columns: 1fr; /* Single column for small screens */
+        gap: 10px; /* Gap between label and input when stacked */
+        align-items: center;
+        margin-bottom: 20px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid #f0f0f0;
+    }
+    .leave-balance-entry:last-child {
+        border-bottom: none;
+        margin-bottom: 0;
+        padding-bottom: 0;
+    }
+
+    /* Responsive grid for larger screens */
+    @media (min-width: 576px) { /* Adjust breakpoint if needed */
+        .leave-balance-entry {
+            grid-template-columns: minmax(150px, 1fr) minmax(100px, auto); /* Label and Input side by side */
+            gap: 20px; /* Gap between Label column and Input column */
+        }
+    }
+
+    .form-group {
+        /* No specific styles needed here if elements are direct children of .leave-balance-entry */
+    }
+
+    .leave-balance-entry label {
+        font-weight: 500;
+        font-size: 0.95em;
+        color: #495057;
+        margin-bottom: 0.2rem; /* For stacked layout */
+    }
+     @media (min-width: 576px) {
+        .leave-balance-entry label {
+            margin-bottom: 0; /* Reset for side-by-side layout */
+            text-align: right; /* Align label text to the right */
+        }
+    }
+
+
+    .form-control {
+        display: block;
+        width: 100%;
+        padding: var(--input-padding-y) var(--input-padding-x);
+        font-size: 0.95rem;
+        font-weight: 400;
+        line-height: 1.5;
+        color: #495057;
+        background-color: #fff;
+        background-clip: padding-box;
+        border: 1px solid #ced4da;
+        border-radius: var(--border-radius);
+        transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+    }
+    .form-control:focus {
+        color: #495057;
+        background-color: #fff;
+        border-color: #80bdff;
+        outline: 0;
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    }
+    input[type="number"].form-control {
+        max-width: 150px; /* Keep number inputs from being too wide */
+    }
+    @media (max-width: 575px) {
+        input[type="number"].form-control {
+            max-width: 100%; /* Allow full width on small stacked layout */
+        }
+    }
+
+
+    .btn {
+        display: inline-block;
+        font-weight: 500;
+        color: #fff;
+        text-align: center;
+        vertical-align: middle;
+        cursor: pointer;
+        user-select: none;
+        background-color: transparent;
+        border: 1px solid transparent;
+        padding: var(--input-padding-y) var(--input-padding-x);
+        font-size: 0.95rem;
+        line-height: 1.5;
+        border-radius: var(--border-radius);
+        transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+    }
+    .btn i {
+        margin-right: 0.4em;
+    }
+
+    .btn-primary { background-color: var(--primary-color); border-color: var(--primary-color); }
+    .btn-primary:hover { background-color: #0069d9; border-color: #0062cc; }
+    
+    .btn-secondary-outline {
+        color: var(--secondary-color);
+        border-color: var(--secondary-color);
+    }
+    .btn-secondary-outline:hover {
+        color: #fff;
+        background-color: var(--secondary-color);
+        border-color: var(--secondary-color);
+    }
+
+    .form-actions {
+        margin-top: 30px;
+        padding-top: 20px;
+        border-top: 1px solid #e9ecef;
+        display: flex;
+        justify-content: flex-end; /* Align buttons to the right */
+        gap: 10px; /* Space between buttons */
+    }
+
+    /* Flash messages styling */
+    .flash-messages { list-style: none; padding: 0; margin-bottom: 20px; }
+    .flash-messages li { padding: 10px 15px; margin-bottom: 10px; border-radius: var(--border-radius); font-size: 0.9em; }
+    .flash-success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+    .flash-danger { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="edit-balance-page-container">
+    <div class="edit-balance-page-header">
+        <i class="fas fa-user-edit"></i>
+        <div>
+            <h1>Edit Leave Balances: <span class="employee-name">{{ user.first_name }} {{ user.last_name }}</span></h1>
+            <p>Manually adjust the current leave balances for this employee. Ensure accuracy as this directly impacts their available leave.</p>
+        </div>
+    </div>
+
+    {# Flash Messages #}
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <ul class="flash-messages">
+            {% for category, message in messages %}
+                <li class="flash-{{ category }}">{{ message }}</li>
+            {% endfor %}
+            </ul>
+        {% endif %}
+    {% endwith %}
+
+    <form method="POST" action="{{ url_for('admin_edit_user_leave_balance', user_id=user._id|string) }}">
+        {# Add CSRF token if using Flask-WTF #}
+        {# {{ form.csrf_token() }} #}
+        
+        <div class="balance-form-section">
+            {% if defined_active_leave_types %}
+                {% for leave_type in defined_active_leave_types %}
+                <div class="leave-balance-entry">
+                    <label for="balance_{{ leave_type.id }}">{{ leave_type.name }}:</label>
+                    <input type="number" class="form-control" id="balance_{{ leave_type.id }}" 
+                           name="balance_{{ leave_type.id }}" 
+                           value="{{ (user_leave_balances.get(leave_type.id, {})).get('current_balance', 0) }}" 
+                           min="0" step="0.5" required>
+                </div>
+                {% endfor %}
+            {% else %}
+                <p class="text-muted">No active leave types are currently defined in the company policy. Please configure them first.</p>
+            {% endif %}
+        </div>
+        
+        {% if defined_active_leave_types %}
+        <div class="form-actions">
+            <a href="{{ url_for('admin_users_list') or url_for('admin_dashboard') }}" class="btn btn-secondary-outline"><i class="fas fa-times"></i> Cancel</a> {# Adjust cancel URL as needed #}
+            <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Save Balances</button>
+        </div>
+        {% endif %}
+    </form>
+</div>
+{% endblock %}

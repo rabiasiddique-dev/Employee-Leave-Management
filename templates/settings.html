@@ -1,0 +1,103 @@
+{% extends "layout.html" %}
+
+{% block head_extra %}
+    <style>
+        .settings-container { max-width: 750px; margin: 30px auto; padding: 20px; background-color: #fff; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .page-title { font-size: 2em; color: #333; margin-bottom: 8px; font-weight: 600; text-align: center; }
+        .page-subtitle { font-size: 1.1em; color: #666; margin-bottom: 30px; text-align: center; }
+        
+        .settings-form-section { 
+            margin-bottom: 40px; 
+            padding: 25px; 
+            background-color: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .section-title { 
+            font-size: 1.5em; 
+            color: #007bff; 
+            margin-bottom: 20px; 
+            padding-bottom: 10px; 
+            border-bottom: 2px solid #007bff;
+            display: flex;
+            align-items: center;
+        }
+        .section-title i { margin-right: 10px; font-size: 1.1em; }
+        
+        .form-group { margin-bottom: 1.25rem; }
+        .form-check { display: block; position: relative; padding-left: 1.75rem; margin-bottom: .75rem; cursor: pointer; font-size: 1rem; -webkit-user-select: none; -moz-user-select: none; user-select: none; }
+        .form-check input { position: absolute; opacity: 0; cursor: pointer; height: 0; width: 0; }
+        .form-check .checkmark { position: absolute; top: 0; left: 0; height: 20px; width: 20px; background-color: #eee; border: 1px solid #ccc; border-radius: .25rem; }
+        .form-check:hover input ~ .checkmark { background-color: #ccc; }
+        .form-check input:checked ~ .checkmark { background-color: #007bff; border-color: #007bff;}
+        .form-check .checkmark:after { content: ""; position: absolute; display: none; }
+        .form-check input:checked ~ .checkmark:after { display: block; }
+        .form-check .checkmark:after { left: 6px; top: 2px; width: 5px; height: 10px; border: solid white; border-width: 0 3px 3px 0; -webkit-transform: rotate(45deg); transform: rotate(45deg); }
+        
+        .btn { 
+            display: inline-block; font-weight: 500; color: #fff; text-align: center; 
+            vertical-align: middle; cursor: pointer; -webkit-user-select: none; 
+            -moz-user-select: none; user-select: none; background-color: #007bff; 
+            border: 1px solid #007bff; padding: .5rem 1rem; font-size: 1rem; 
+            line-height: 1.5; border-radius: .25rem; 
+            transition: color .15s ease-in-out,background-color .15s ease-in-out,border-color .15s ease-in-out,box-shadow .15s ease-in-out;
+        }
+        .btn:hover { opacity: 0.9; }
+        .btn i { margin-right: 5px; }
+        .btn-primary { background-color: #007bff; border-color: #007bff;} /* Explicitly define btn-primary */
+    </style>
+{% endblock %}
+
+{% block content %}
+<div class="settings-container">
+    <h1 class="page-title"><i class="fas fa-cog"></i> Account Settings</h1>
+    <p class="page-subtitle">Manage your notification preferences and other account settings.</p>
+
+    {# Flash messages handled by layout.html #}
+
+    <section class="settings-form-section">
+        <h2 class="section-title"><i class="fas fa-envelope-open-text"></i> Email Notification Preferences</h2>
+        <form method="POST" action="{{ url_for('settings') }}">
+            {# Aapko CSRF token add karna chahiye agar aap Flask-WTF use kar rahe hain, #}
+            {# lekin yeh form abhi simple HTML form hai based on your app.py settings route #}
+            {# Agar aapne settings route ko WTForms se update kiya hai, toh {{ form.hidden_tag() }} add karein #}
+
+            <div class="form-group">
+                <label class="form-check">Receive an email when you apply for a leave.
+                    <input type="checkbox" name="email_on_leave_applied" 
+                           {% if current_prefs.email_on_leave_applied %}checked{% endif %}>
+                    <span class="checkmark"></span>
+                </label>
+            </div>
+
+            <div class="form-group">
+                <label class="form-check">Receive an email when your leave application status (approved/rejected) changes.
+                    <input type="checkbox" name="email_on_leave_status_change" 
+                           {% if current_prefs.email_on_leave_status_change %}checked{% endif %}>
+                    <span class="checkmark"></span>
+                </label>
+            </div>
+            
+            {# Yahan aur notification preferences add kiye ja sakte hain #}
+
+            <div class="form-group mt-4">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i> Save Settings
+                </button>
+            </div>
+        </form>
+    </section>
+
+    {# CHANGE PASSWORD SECTION REMOVED #}
+    {# 
+    <section class="settings-form-section">
+        <h2 class="section-title"><i class="fas fa-key"></i> Change Password</h2>
+        <p class="text-muted">(Password change functionality is available on the <a href="{{ url_for('profile') }}">My Profile</a> page.)</p>
+        
+        <! -- Password change form elements were here -->
+    </section> 
+    #}
+
+</div>
+{% endblock %}

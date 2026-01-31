@@ -1,0 +1,84 @@
+<footer class="site-footer">
+    <div class="container">
+        <div class="footer-content">
+            <div class="footer-section footer-about">
+                <h4 class="footer-title"><i class="fas fa-leaf"></i> LeaveFlow</h4>
+                <p>Streamlining your leave management process with efficiency and ease. Manage your time off effortlessly and focus on what matters most.</p>
+                <div class="contact-info">
+                    <span><i class="fas fa-phone-alt"></i> +92 327 890 466 7</span>
+                    <span><i class="fas fa-envelope"></i> rabiakhanzadii@leaveflow.com</span>
+                </div>
+            </div>
+
+            <div class="footer-section footer-links">
+                <h4 class="footer-title">Quick Actions</h4>
+                
+                {% if session.user_id %}
+                    {% if session.user_role == 'admin' %}
+                        <ul>
+                            <li><a href="{{ url_for('admin_dashboard') }}"><i class="fas fa-user-shield fa-fw"></i> Admin Panel</a></li>
+                            <li><a href="{{ url_for('admin_reports_dashboard') }}"><i class="fas fa-chart-pie fa-fw"></i> View Reports</a></li>
+                            <li><a href="{{ url_for('admin_my_profile') }}"><i class="fas fa-id-badge fa-fw"></i> My Profile</a></li>
+                            <li><a href="{{ url_for('admin_account_settings') }}"><i class="fas fa-user-cog fa-fw"></i> Admin Settings</a></li>
+                        </ul>
+                    {% else %}
+                        <ul>
+                            <li><a href="{{ url_for('dashboard') }}"><i class="fas fa-tachometer-alt fa-fw"></i> Dashboard</a></li>
+                            <li><a href="{{ url_for('apply_leave') }}"><i class="fas fa-paper-plane fa-fw"></i> Apply for Leave</a></li>
+                            <li><a href="{{ url_for('my_leaves') }}"><i class="fas fa-calendar-check fa-fw"></i> My Leaves</a></li>
+                            <li><a href="{{ url_for('profile') }}"><i class="fas fa-user-edit fa-fw"></i> My Profile</a></li>
+                        </ul>
+                    {% endif %}
+                {% else %}
+                    <ul>
+                        <li><a href="{{ url_for('login') }}"><i class="fas fa-sign-in-alt fa-fw"></i> Login</a></li>
+                        <li><a href="{{ url_for('register') }}"><i class="fas fa-user-plus fa-fw"></i> Register</a></li>
+                        <li><a href="{{ url_for('about_us_footer') }}"><i class="fas fa-info-circle fa-fw"></i> About LeaveFlow</a></li>
+                        <li><a href="{{ url_for('features_footer') }}"><i class="fas fa-star fa-fw"></i> Features</a></li>
+                        <li><a href="{{ url_for('contact_us_footer') }}"><i class="fas fa-headset fa-fw"></i> Contact Us</a></li>
+                    </ul>
+                {% endif %}
+            </div>
+
+            <div class="footer-section footer-legal">
+                <h4 class="footer-title">Legal</h4>
+                <ul>
+                    <li><a href="{{ url_for('privacy_policy_footer') }}"><i class="fas fa-shield-alt fa-fw"></i> Privacy Policy</a></li>
+                    <li><a href="{{ url_for('terms_service_footer') }}"><i class="fas fa-file-contract fa-fw"></i> Terms of Service</a></li>
+                    <li><a href="{{ url_for('cookie_policy_footer') }}"><i class="fas fa-cookie-bite fa-fw"></i> Cookie Policy</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-section footer-social">
+                <h4 class="footer-title">Connect With Us</h4>
+                <div class="social-links">
+                    <a href="https://facebook.com/your-page" target="_blank" aria-label="Facebook" class="social-icon facebook"><i class="fab fa-facebook-f"></i></a>
+                    <a href="https://twitter.com/your-page" target="_blank" aria-label="Twitter" class="social-icon twitter"><i class="fab fa-twitter"></i></a>
+                    <a href="https://linkedin.com/company/your-company" target="_blank" aria-label="LinkedIn" class="social-icon linkedin"><i class="fab fa-linkedin-in"></i></a>
+                    <a href="https://instagram.com/your-page" target="_blank" aria-label="Instagram" class="social-icon instagram"><i class="fab fa-instagram"></i></a>
+                </div>
+                <div class="newsletter">
+                    <h5>Stay Updated</h5>
+                    <p>Get exclusive product updates, tips, and news directly in your inbox!</p> {# Added value proposition #}
+                    <form action="#" method="post" class="newsletter-form"> {# Action URL ko update karein agar newsletter functionality implement karte hain #}
+                        <input type="email" name="email" placeholder="Enter your email" required>
+                        <button type="submit"><i class="fas fa-paper-plane"></i></button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer-bottom">
+            <p>© <span id="currentYear"></span> LeaveFlow. All rights reserved. Designed with <i class="fas fa-heart animated-heart"></i> for modern workplaces.</p>
+        </div>
+    </div>
+</footer>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const currentYearSpan = document.getElementById('currentYear');
+        if (currentYearSpan) {
+            currentYearSpan.textContent = new Date().getFullYear();
+        }
+    });
+</script>

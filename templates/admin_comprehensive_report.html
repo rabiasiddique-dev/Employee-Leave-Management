@@ -1,0 +1,728 @@
+{% extends "layout.html" %}
+
+{% block head_extra %}
+<!-- Chart.js library -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<!-- Chart.js Datalabels Plugin -->
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
+
+<style>
+    /* General Styles (Consistent with admin-dashboard-container and layout) */
+    body {
+        font-family: 'Poppins', 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+        color: #344767; /* A professional dark grey */
+        background-color: #f8f9fa; /* Lighter background consistent with dashboard */
+    }
+
+    .report-container { 
+        max-width: 1200px; 
+        margin: 30px auto; 
+        padding: 30px; /* Increased padding */
+        background-color: #ffffff; 
+        border-radius: 12px; /* More rounded */
+        box-shadow: 0 4px 20px rgba(0,0,0,0.05); /* Softer, slightly larger shadow */
+        position: relative; /* For absolute positioning of the back and other buttons */
+        padding-bottom: 90px; /* Space for the back and export/print buttons at the bottom */
+        border: 1px solid #e9edf2; /* Subtle border */
+    }
+    
+    /* Page Title & Subtitle (Consistent with dashboard and other admin pages) */
+    .page-header-centered { /* Reusing the centered header structure */
+        text-align: center;
+        margin-bottom: 40px;
+    }
+    .page-main-title { 
+        font-family: 'Poppins', sans-serif !important; 
+        display: flex; 
+        align-items: center; 
+        gap: 15px; /* More space */
+        color: #2b3b52; /* Deeper color for titles */
+        font-size: 2.5rem; /* Larger font size */
+        font-weight: 700; /* Bolder */
+        margin-bottom: 0.5rem; 
+        justify-content: center; /* For centering content within flex container */
+    }
+    .page-main-title i { 
+        color: #007bff; /* Primary blue for icons */
+        font-size: 2.8rem; /* Larger icon size */
+    }
+    .page-subtitle { 
+        font-size: 1.2rem; 
+        color: #67748e; 
+        max-width: 800px; /* Limit width for readability */
+        margin: 0.5rem auto 0; /* Center subtitle */
+    }
+    
+    /* Report Section (Consistent with dashboard sections) */
+    .report-section { 
+        background-color: #fff; /* Consistent with container for this page's design */
+        padding: 30px; /* Increased padding */
+        border-radius: 12px; /* More rounded */
+        box-shadow: 0 4px 20px rgba(0,0,0,0.05); /* Softer, slightly larger shadow */
+        margin-bottom: 35px; /* Consistent margin */
+        border: 1px solid #e9edf2; /* Subtle border */
+    }
+    .section-title { 
+        font-family: 'Poppins', sans-serif !important;
+        font-size: 1.8rem; /* Larger font */
+        color: #344767; /* Darker color for section titles */
+        margin-bottom: 25px; /* More space below title */
+        display: flex; /* For icon alignment */
+        align-items: center;
+        gap: 10px; /* Space between icon and text */
+        font-weight: 600; /* Bolder */
+        border-bottom: 1px solid #f0f2f5; /* Subtle border */
+        padding-bottom: 15px; /* Padding below border */
+    }
+    .section-title i {
+        color: #007bff; /* Consistent icon color */
+    }
+    .section-title .fa-users { color: #28a745; } /* Green for Employee Details icon */
+
+    /* Filter Form Styles */
+    .filter-form { 
+        background-color: #f8f9fa; /* Light grey background */
+        padding: 25px; /* More padding */
+        border-radius: 10px; /* More rounded */
+        margin-bottom: 35px; /* More space below form */
+        border: 1px solid #e9ecef; /* Subtle border */
+        box-shadow: inset 0 1px 5px rgba(0, 0, 0, 0.03); /* Slight inset shadow */
+    }
+    .filter-form .row {
+        align-items: flex-end; /* Align inputs and button at the bottom */
+        margin-right: -10px; /* Adjust negative margins for consistent spacing */
+        margin-left: -10px;
+    }
+    .filter-form .col-md-2, .filter-form .col-md-3 {
+        padding-right: 10px; /* Adjust padding for consistent spacing */
+        padding-left: 10px;
+    }
+    .filter-form .form-group label {
+        display: block; /* Labels on their own line */
+        margin-bottom: 8px; /* More space */
+        font-weight: 600; /* Bolder */
+        color: #495057;
+        font-size: 0.95rem; /* Slightly larger */
+    }
+    
+    /* Table Styles (Consistent with dashboard tables) */
+    .styled-table { 
+        width: 100%; 
+        border-collapse: collapse; 
+        margin-top: 25px; /* Increased top margin */
+        font-size: 0.95em; /* Slightly larger for readability */
+        border-radius: 10px; /* More rounded */
+        overflow: hidden; /* Ensures border-radius applies */
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04); /* Subtler table shadow */
+    }
+    .styled-table th, .styled-table td { 
+        padding: 15px 20px; /* Increased padding */
+        border: 1px solid #e9ecef; /* Lighter border */
+        text-align: left; 
+    }
+    .styled-table thead th { 
+        background-color: #f0f2f5; /* Lighter header background */
+        font-weight: 600; 
+        color: #344767;
+        text-transform: uppercase;
+        font-size: 0.88rem; /* Slightly larger */
+    }
+    .styled-table tbody tr:nth-child(even) { background-color: #fdfdfd; }
+    .styled-table tbody tr:hover { background-color: #f6f9fc; }
+    .styled-table ul { margin: 0; padding-left: 20px; list-style: disc; } /* For summary lists */
+    .styled-table li { margin-bottom: 5px; }
+    .styled-table li:last-child { margin-bottom: 0; }
+
+    /* "No Data" Message Style */
+    .report-empty-state { 
+        text-align: center; 
+        padding: 50px 20px; /* More padding */
+        background-color: #f8f9fa; 
+        border: 1px dashed #ced4da; /* Dashed border */
+        border-radius: 12px; /* More rounded */
+        margin-top: 25px; /* More margin */
+        color: #6c757d; 
+        min-height: 180px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    }
+    .report-empty-state i { 
+        font-size: 4rem; /* Larger icon */
+        margin-bottom: 25px; /* More space */
+        color: #b0c4de; /* Softer, muted icon color */
+        opacity: 0.8;
+    }
+    .report-empty-state p { 
+        margin: 0; 
+        font-size: 1.3rem; /* Larger text */
+        font-weight: 500;
+        color: #495057;
+    }
+
+    /* Chart Container Style */
+    .chart-container { 
+        position: relative; 
+        height: 400px; /* Taller charts */
+        width: 100%; 
+        margin-top: 25px; /* More margin */
+        background-color: #fcfdfe; /* Light background for charts */
+        padding: 20px; /* Padding inside chart area */
+        border-radius: 10px; /* Rounded corners */
+        border: 1px solid #e9ecef; /* Subtle border */
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03); /* Light shadow */
+    }
+
+    /* Helper classes (Adjusted for consistency) */
+    .row { display: flex; flex-wrap: wrap; margin-right: -15px; margin-left: -15px;} 
+    .col-md-2, .col-md-3, .col-md-6 { position: relative; width: 100%; padding-right: 15px; padding-left: 15px; box-sizing: border-box; }
+    .align-items-end { align-items: flex-end !important; }
+    .w-100 { width: 100% !important; }
+    .form-group { margin-bottom: 1.5rem; } /* Consistent with other forms */ .mt-2 { margin-top: .5rem !important; } .mt-3 { margin-top: 1rem !important; }
+
+    /* Re-defined Button Styles (Matching manage_employees.html and dashboard) */
+    .btn {
+        padding: 10px 18px; /* Standard button padding */
+        border: none;
+        border-radius: 8px; /* Consistent rounded corners */
+        cursor: pointer;
+        font-size: 1rem;
+        font-weight: 500;
+        transition: background-color 0.2s ease-in-out, box-shadow 0.2s ease, transform 0.1s ease;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px; /* Space between icon and text */
+        text-decoration: none; /* For anchor buttons */
+        white-space: nowrap; /* Prevent button text from wrapping */
+    }
+    .btn i { margin-right: 8px; font-size: 0.9em; } /* Consistent icon margin */
+    .btn-primary { background-color: #007bff; color: white; box-shadow: 0 2px 8px rgba(0, 123, 255, 0.2); }
+    .btn-primary:hover { background-color: #0056b3; box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3); transform: translateY(-1px); }
+    .btn-success { background-color: #28a745; color: white; box-shadow: 0 2px 8px rgba(40, 167, 69, 0.2); }
+    .btn-success:hover { background-color: #218838; box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3); transform: translateY(-1px); }
+    .btn-info { /* Used for Print and Back to Reports */
+        background-color: #17a2b8; color: white; box-shadow: 0 2px 8px rgba(23, 162, 184, 0.2);
+    }
+    .btn-info:hover {
+        background-color: #138496; box-shadow: 0 4px 12px rgba(23, 162, 184, 0.3); transform: translateY(-1px);
+    }
+    .btn-secondary { /* Used for Cancel/Back buttons in other forms if needed */
+        background-color: #6c757d; color: white;
+    }
+    .btn-secondary:hover {
+        background-color: #5a6268; box-shadow: 0 2px 6px rgba(108, 117, 125, 0.3);
+    }
+    .btn-sm { /* For smaller buttons if explicitly needed, but aiming for full size */
+        padding: 7px 14px; font-size: 0.9rem;
+    }
+
+    /* Form Control Input Style */
+    .form-control { 
+        display: block; width: 100%; padding: 12px 15px; /* Increased padding for better look */
+        font-size: 1rem; line-height: 1.5; color: #495057; 
+        background-color: #fff; border: 1px solid #ced4da; border-radius: 8px; /* More rounded */
+        box-sizing: border-box; /* Crucial for consistent sizing */
+        transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+    }
+    .form-control:focus {
+        border-color: #007bff;
+        outline: 0;
+        box-shadow: 0 0 0 0.25rem rgba(0,123,255,.25);
+    }
+    .form-control-sm { /* Smaller form controls used in filters */
+        padding: 8px 12px; font-size: 0.9rem; border-radius: 6px;
+    }
+
+
+    /* Global Back to Dashboard Button */
+    .back-to-dashboard-btn-container {
+        position: absolute;
+        bottom: 30px; /* Distance from the bottom of .report-container */
+        left: 30px; /* Distance from the left of .report-container */
+        padding-top: 0; 
+        border-top: none; 
+        z-index: 10; 
+    }
+    /* Right-aligned buttons at the bottom */
+    .report-bottom-buttons-container {
+        position: absolute;
+        bottom: 30px;
+        right: 30px;
+        display: flex;
+        gap: 15px; /* More space between buttons */
+        z-index: 10;
+    }
+
+
+    /* === RESPONSIVE ADJUSTMENTS === */
+    @media (min-width: 768px) { 
+        .col-md-2 { flex: 0 0 16.666667%; max-width: 16.666667%;} 
+        .col-md-3 { flex: 0 0 25%; max-width: 25%;}
+        .col-md-6 { flex: 0 0 50%; max-width: 50%; } /* Charts ko side-by-side rakhega */
+    } 
+
+    @media (max-width: 992px) {
+        .report-container {
+            padding: 25px;
+            margin: 25px auto;
+        }
+        .page-main-title { font-size: 2.2rem; gap: 10px; }
+        .page-main-title i { font-size: 2.5rem; }
+        .page-subtitle { font-size: 1.1rem; margin-bottom: 30px; }
+        .report-section { padding: 25px; margin-bottom: 30px; }
+        .section-title { font-size: 1.6rem; padding-bottom: 12px; margin-bottom: 20px; }
+        .section-title i { font-size: 1.8rem; }
+        .filter-form { padding: 20px; margin-bottom: 30px; }
+        .filter-form .form-group label { font-size: 0.9rem; }
+        .form-control { padding: 10px 12px; font-size: 0.95rem; }
+        .form-control-sm { padding: 6px 10px; font-size: 0.85rem; }
+        .btn { padding: 8px 15px; font-size: 0.95rem; }
+        .chart-container { height: 350px; padding: 15px; }
+        .styled-table th, .styled-table td { padding: 12px 15px; font-size: 0.9rem; }
+        .back-to-dashboard-btn-container, .report-bottom-buttons-container { bottom: 20px; left: 20px; right: 20px; gap: 10px; }
+    }
+
+    @media (max-width: 768px) {
+        .report-container {
+            margin: 15px auto;
+            padding: 15px;
+            padding-bottom: 80px; /* Adjust for mobile back button */
+        }
+        .page-main-title {
+            font-size: 2rem;
+            gap: 10px;
+            flex-direction: column; /* Stack icon and text */
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+        .page-main-title i { margin-bottom: 5px; }
+        .page-subtitle {
+            font-size: 1rem;
+            text-align: center;
+        }
+        .filter-form .row {
+            flex-direction: column;
+            align-items: stretch;
+            margin-right: 0; margin-left: 0; /* Remove negative margins for stacking */
+        }
+        .filter-form .col-md-2,
+        .filter-form .col-md-3 {
+            max-width: 100%;
+            padding-right: 0;
+            padding-left: 0;
+        }
+        .filter-form .form-group {
+            margin-bottom: 15px; /* Add space between stacked filter items */
+        }
+        .filter-form .btn {
+            width: 100%;
+            margin-left: 0 !important; /* Override inline margin for print button */
+        }
+        .report-section {
+            padding: 20px;
+        }
+        .section-title {
+            font-size: 1.4rem;
+            flex-direction: column;
+            align-items: flex-start; /* Align text to left if stacked */
+            gap: 5px;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+        .section-title i { margin-right: 0; margin-bottom: 5px;}
+        .styled-table th, .styled-table td {
+            padding: 10px 12px;
+            font-size: 0.85em;
+        }
+        /* Mobile specific positioning for Back to Reports and other bottom buttons */
+        .back-to-dashboard-btn-container,
+        .report-bottom-buttons-container {
+            position: static; /* Remove absolute positioning */
+            text-align: center; /* Center the buttons */
+            margin-top: 25px; /* Add margin from content above */
+            padding-top: 20px; /* Add padding for separator visual */
+            border-top: 1px solid #e9ecef; /* Add a separator line on mobile */
+            left: auto; bottom: auto; right: auto; /* Reset positioning properties */
+            width: 100%; /* Full width */
+            justify-content: center; /* Center buttons horizontally in flex container */
+            flex-wrap: wrap; /* Allow buttons to wrap */
+            gap: 10px; /* Space between buttons when wrapped */
+        }
+        .report-bottom-buttons-container .btn {
+            flex-grow: 1; /* Allow buttons to grow and fill space */
+            max-width: calc(50% - 5px); /* Max width for two buttons per row */
+            font-size: 0.9rem;
+        }
+        .report-bottom-buttons-container .btn:only-child {
+            max-width: 100%; /* Full width if only one button */
+        }
+    }
+
+    @media (max-width: 576px) {
+        .report-container {
+            margin: 10px auto;
+            padding: 10px;
+            padding-bottom: 70px;
+        }
+        .page-main-title { font-size: 2.2rem; }
+        .page-main-title i { font-size: 2.5rem; }
+        .page-subtitle { font-size: 0.95rem; }
+        .report-section { padding: 15px; margin-bottom: 20px; }
+        .section-title { font-size: 1.2rem; padding-bottom: 8px; margin-bottom: 10px; }
+        .section-title i { font-size: 1.4rem; }
+        .filter-form { padding: 15px; margin-bottom: 20px; }
+        .form-control, .form-control-sm { padding: 8px 10px; font-size: 0.9rem; }
+        .btn { padding: 8px 15px; font-size: 0.9rem; }
+        .styled-table th, .styled-table td { padding: 8px; font-size: 0.75em; }
+        .report-empty-state { padding: 30px 15px; }
+        .report-empty-state i { font-size: 3.5rem; }
+        .report-empty-state p { font-size: 1.1rem; }
+        .chart-container { height: 300px; padding: 10px; }
+        .report-bottom-buttons-container .btn {
+            padding: 8px 12px; /* Smaller padding for mobile buttons */
+            font-size: 0.85rem;
+        }
+    }
+
+
+    /* Print Styles */
+    @media print {
+        /* Hide non-essential elements */
+        .no-print,
+        .site-header-wrapper, /* Assuming this is your global header */
+        .site-footer, /* Assuming this is your global footer */
+        .back-to-dashboard-btn-container,
+        .report-bottom-buttons-container, 
+        .flash-messages-container { /* Assuming you have this for Flask messages */
+            display: none !important;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-size: 12pt; /* Adjust base font size for printing */
+            color: #000;
+        }
+
+        .report-container {
+            width: auto;
+            max-width: none;
+            margin: 0;
+            padding: 0;
+            box-shadow: none !important;
+            border-radius: 0 !important;
+            background-color: #fff !important;
+            border: none !important; /* Remove borders for main container */
+        }
+
+        .report-section {
+            box-shadow: none !important;
+            border: 1px solid #e0e0e0 !important; /* Subtle border for sections */
+            margin-bottom: 20px !important;
+            border-radius: 0 !important;
+            padding: 15px !important;
+            page-break-inside: avoid; /* Prevent sections from breaking across pages */
+        }
+
+        .page-main-title, .page-subtitle {
+            text-align: center !important;
+            color: #000 !important;
+            margin-bottom: 10px !important;
+            font-size: 18pt !important;
+        }
+        .page-subtitle { font-size: 12pt !important; }
+
+        .page-main-title i {
+            color: #000 !important; /* Icons should be black on print */
+        }
+        .section-title {
+            color: #000 !important;
+            margin-bottom: 10px !important;
+            border-bottom: 1px solid #ddd !important; /* Clear section separation */
+            padding-bottom: 5px !important;
+            font-size: 14pt !important;
+        }
+        .section-title i {
+            color: #000 !important;
+        }
+
+        /* Tables for Print */
+        .styled-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            page-break-inside: avoid; /* Keep tables on one page if possible */
+        }
+        .styled-table th, .styled-table td {
+            border: 1px solid #a0a0a0 !important; /* Clearer borders */
+            padding: 8px !important;
+            font-size: 10pt;
+        }
+        .styled-table thead th {
+            background-color: #f0f0f0 !important;
+            color: #000 !important;
+            font-weight: bold;
+        }
+        .styled-table tbody tr:nth-child(even) {
+            background-color: #f8f8f8 !important; /* Slight shading for readability */
+        }
+        .styled-table ul { padding-left: 20px !important; margin: 0 !important; }
+        .styled-table li { margin-bottom: 0 !important; }
+
+        /* Charts for Print */
+        .chart-container {
+            height: auto !important; /* Allow charts to take natural height */
+            max-height: 400px; /* Prevent excessively tall charts */
+            display: block !important; /* Ensure canvas is printed */
+            margin-bottom: 20px !important;
+            box-shadow: none !important;
+            border: 1px solid #ccc !important;
+            padding: 10px !important;
+        }
+        canvas {
+            display: block; /* Ensure canvas element is visible */
+            width: 100% !important; /* Fill container */
+            max-width: 100% !important; /* Ensure it fits */
+            height: auto !important; /* Maintain aspect ratio */
+        }
+        /* Chart.js labels and ticks for print */
+        canvas {
+            font-size: 10pt !important;
+        }
+        .chartjs-render-monitor {
+            font-size: 10pt !important;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="report-container">
+    <div class="page-header-centered">
+        <h1 class="page-main-title"><i class="fas fa-chart-pie"></i> Comprehensive Leave Report</h1>
+        <p class="page-subtitle">Summary of key leave metrics {{ report_period_title_suffix }}.</p>
+    </div>
+
+    <!-- Filter Form -->
+    <form method="GET" action="{{ url_for('admin_comprehensive_report') }}" class="filter-form no-print">
+        <div class="row align-items-end">
+            <div class="col-md-3 form-group"><label for="period_type_comp">Report Period:</label><select name="period_type" id="period_type_comp" class="form-control form-control-sm"><option value="monthly" {% if period_type == 'monthly' %}selected{% endif %}>Monthly</option><option value="quarterly" {% if period_type == 'quarterly' %}selected{% endif %}>Quarterly</option><option value="yearly" {% if period_type == 'yearly' %}selected{% endif %}>Yearly</option></select></div>
+            <div class="col-md-3 form-group"><label for="year_comp">Year:</label><select name="year" id="year_comp" class="form-control form-control-sm">{% set default_year = g.current_year %}{% for y in range(default_year - 5, default_year + 2) %}<option value="{{ y }}" {% if y == selected_year %}selected{% endif %}>{{ y }}</option>{% endfor %}</select></div>
+            <div class="col-md-2 form-group" id="month_selector_comp"><label for="month_comp">Month:</label><select name="month" id="month_comp" class="form-control form-control-sm">{% for m in range(1, 13) %}<option value="{{ m }}" {% if m == selected_month %}selected{% endif %}>{{ m | month_name }}</option>{% endfor %}</select></div>
+            <div class="col-md-2 form-group" id="quarter_selector_comp"><label for="quarter_comp">Quarter:</label><select name="quarter" id="quarter_comp" class="form-control form-control-sm">{% for q in range(1, 5) %}<option value="{{ q }}" {% if q == selected_quarter %}selected{% endif %}>Q{{ q }}</option>{% endfor %}</select></div>
+            <div class="col-md-2 form-group"><button type="submit" class="btn btn-primary w-100"><i class="fas fa-filter"></i> Apply</button></div>
+        </div>
+        {# Export and Print buttons are now moved to the bottom-right via JS below #}
+    </form>
+
+    <!-- Visual Summary Section -->
+    <section class="report-section">
+        <h2 class="section-title"><i class="fas fa-chart-bar"></i> Visual Summary</h2>
+        <div class="row">
+            <div class="col-md-6">
+                {# Always render canvas, JS will handle empty state if data is all zeros #}
+                <div class="chart-container"><canvas id="leaveTypeDoughnutChart"></canvas></div>
+            </div>
+            <div class="col-md-6">
+                {# Always render canvas, JS will handle empty state if data is all zeros #}
+                <div class="chart-container"><canvas id="employeeConsumptionBarChart"></canvas></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Details Tables... -->
+    <section class="report-section">
+        <h2 class="section-title"><i class="fas fa-users"></i> Details: Employee-wise Leave Consumption</h2>
+        {% if employee_consumption_data %}<div class="table-responsive"><table class="styled-table"><thead><tr><th>Employee ID</th><th>Employee Name</th><th>Total Days</th><th>Summary</th></tr></thead><tbody>{% for item in employee_consumption_data %}<tr><td>{{ item.employee_id | default('N/A') }}</td><td>{{ item.employee_name | default('Unknown') }}</td><td>{{ item.total_days_consumed }}</td><td>{% if item.leave_types_summary %}<ul>{% for type, days in item.leave_types_summary.items() %}<li>{{ type|title }}: {{ days }} day(s)</li>{% endfor %}</ul>{% else %}N/A{% endif %}</td></tr>{% endfor %}</tbody></table></div>{% else %}<div class="report-empty-state"><i class="fas fa-folder-open"></i><p>No employee consumption data for the selected period.</p></div>{% endif %}
+    </section>
+    
+    <!-- Buttons at the bottom of the page (Back to Reports, Export, Print) -->
+    <div class="back-to-dashboard-btn-container no-print"> {# Reusing this class for consistency #}
+        <a href="{{ url_for('admin_reports_dashboard') }}" class="btn btn-info"><i class="fas fa-arrow-left"></i> Back to Reports</a>
+    </div>
+    <div class="report-bottom-buttons-container no-print">
+        <a href="{{ url_for('admin_comprehensive_report', period_type=period_type, year=selected_year, month=selected_month, quarter=selected_quarter, export='csv') }}" class="btn btn-success"><i class="fas fa-file-csv"></i> Export (CSV)</a>
+        <button type="button" onclick="window.print()" class="btn btn-info"><i class="fas fa-print"></i> Print</button>
+    </div>
+</div>
+
+{% block back_to_previous_button %}{% endblock %} {# IMPORTANT: This hides the global back button on this specific page #}
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Smart filter logic
+    const periodTypeSelect = document.getElementById('period_type_comp');
+    const monthSelector = document.getElementById('month_selector_comp');
+    const quarterSelector = document.getElementById('quarter_selector_comp');
+
+    function toggleSelectors() {
+        if (monthSelector) monthSelector.style.display = (periodTypeSelect.value === 'monthly') ? 'block' : 'none';
+        if (quarterSelector) quarterSelector.style.display = (periodTypeSelect.value === 'quarterly') ? 'block' : 'none';
+    }
+    if (periodTypeSelect) { 
+        periodTypeSelect.addEventListener('change', toggleSelectors); 
+        // Initial call to set correct visibility based on current selection
+        toggleSelectors(); 
+    }
+
+    // Chart.js Data
+    const leaveTypeData = {{ leave_type_data | tojson }};
+    const employeeConsumptionData = {{ employee_consumption_data | tojson }};
+
+    // Register the datalabels plugin globally once
+    Chart.register(ChartDataLabels);
+    
+    // Doughnut Chart for Leave Type Usage
+    const doughnutCtx = document.getElementById('leaveTypeDoughnutChart');
+    if (doughnutCtx) { // Check if canvas element exists
+        // Filter out items with 0 total_days_taken for display
+        const filteredLeaveTypeData = leaveTypeData.filter(item => item.total_days_taken > 0);
+
+        if (filteredLeaveTypeData.length > 0) {
+            new Chart(doughnutCtx, { 
+                type: 'doughnut', 
+                data: { 
+                    labels: filteredLeaveTypeData.map(item => item.leave_type), 
+                    datasets: [{ 
+                        label: 'Days Taken', 
+                        data: filteredLeaveTypeData.map(item => item.total_days_taken), 
+                        backgroundColor: ['#007bff', '#dc3545', '#ffc107', '#17a2b8', '#28a745', '#6f42c1'], /* Reverted to more vibrant, consistent theme colors */
+                        hoverOffset: 4 
+                    }] 
+                }, 
+                options: { 
+                    responsive: true, maintainAspectRatio: false, 
+                    plugins: { 
+                        legend: { 
+                            position: 'top',
+                            labels: {
+                                font: {
+                                    size: 12,
+                                    family: 'Poppins' // Consistent font
+                                },
+                                color: '#344767' // Consistent text color
+                            }
+                        }, 
+                        title: { 
+                            display: true, 
+                            text: 'Leave Days by Type',
+                            font: {
+                                size: 16,
+                                weight: 'bold',
+                                family: 'Poppins'
+                            },
+                            color: '#343a40' // Consistent text color
+                        },
+                        datalabels: {
+                            formatter: (value, ctx) => {
+                                let sum = ctx.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
+                                if (sum === 0) return '';
+                                let percentage = (value * 100 / sum).toFixed(1) + '%';
+                                // Only show labels for slices > 5% for readability
+                                return (value * 100 / sum) > 5 ? percentage : '';
+                            },
+                            color: '#fff', // White text for better contrast on vibrant colors
+                            font: { weight: 'bold', size: 12, family: 'Poppins' },
+                            textShadowBlur: 2, 
+                            textShadowColor: 'rgba(0, 0, 0, 0.6)' /* Stronger shadow for readability */
+                        }
+                    } 
+                } 
+            });
+        } else {
+            // Replace canvas with empty state if no positive data
+            doughnutCtx.parentNode.innerHTML = '<div class="report-empty-state"><i class="fas fa-chart-pie"></i><p>No data for Leave Usage chart.</p></div>';
+        }
+    }
+
+
+    // Bar Chart for Employee Consumption
+    const barChartCtx = document.getElementById('employeeConsumptionBarChart');
+    if (barChartCtx) { // Check if canvas element exists
+        // Filter out employees with 0 days consumed
+        const filteredEmployeeConsumptionData = employeeConsumptionData.filter(item => item.total_days_consumed > 0);
+
+        if (filteredEmployeeConsumptionData.length > 0) {
+            // Sort data for display (highest at top) and take top 10
+            const topEmployees = [...filteredEmployeeConsumptionData].sort((a, b) => a.total_days_consumed - b.total_days_consumed).slice(-10);
+
+            new Chart(barChartCtx, { 
+                type: 'bar', 
+                data: { 
+                    labels: topEmployees.map(item => item.employee_name), 
+                    datasets: [{ 
+                        label: 'Total Days Consumed', 
+                        data: topEmployees.map(item => item.total_days_consumed), 
+                        backgroundColor: 'rgba(0, 123, 255, 0.8)', /* More vibrant blue */
+                        borderColor: 'rgba(0, 123, 255, 1)', 
+                        borderWidth: 1 
+                    }] 
+                }, 
+                options: { 
+                    indexAxis: 'y', // Horizontal bars
+                    responsive: true, 
+                    maintainAspectRatio: false, 
+                    plugins: { 
+                        legend: { display: false }, 
+                        title: { 
+                            display: true, 
+                            text: 'Top 10 Employees by Leave Days',
+                            font: {
+                                size: 16,
+                                weight: 'bold',
+                                family: 'Poppins'
+                            },
+                            color: '#343a40'
+                        },
+                        datalabels: { // Data labels for the bar chart
+                            anchor: 'end', // Attach to the end of the bar
+                            align: 'start', // Align the start of the label to the anchor (puts label inside the bar)
+                            formatter: (value) => value > 0 ? value + ' days' : '', 
+                            color: '#fff', /* White text for labels inside the blue bar */
+                            font: { size: 12, weight: 'bold', family: 'Poppins' },
+                            textShadowBlur: 2,
+                            textShadowColor: 'rgba(0, 0, 0, 0.6)'
+                        }
+                    } ,
+                    scales: { 
+                        x: { 
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Days Consumed',
+                                font: { size: 12, weight: 'bold', family: 'Poppins' },
+                                color: '#555'
+                            },
+                            ticks: {
+                                font: { size: 10, family: 'Poppins' },
+                                color: '#555'
+                            },
+                            // Add padding to the right of the X-axis for labels
+                            padding: {
+                                right: 20 
+                            }
+                        },
+                        y: {
+                            ticks: {
+                                font: { size: 10, family: 'Poppins' },
+                                color: '#555'
+                            }
+                        }
+                    },
+                    layout: { // Global chart padding to give extra space for labels
+                        padding: {
+                            right: 10 
+                        }
+                    }
+                } 
+            });
+        } else { // If no data with positive consumption, replace canvas with empty state
+            barChartCtx.parentNode.innerHTML = '<div class="report-empty-state"><i class="fas fa-user-slash"></i><p>No data for Employee Consumption chart.</p></div>';
+        }
+    }
+});
+</script>
+{% endblock %}

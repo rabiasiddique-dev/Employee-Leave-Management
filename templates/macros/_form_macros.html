@@ -1,0 +1,105 @@
+{# -------------------------------------------------------------------------- #}
+{#                        JINJA2 MACRO FOR RENDERING WTFORMS FIELDS             #}
+{# -------------------------------------------------------------------------- #}
+
+{% macro render_field(field, label_visible=True) %} {# Removed **kwargs from signature #}
+  {% set custom_class = kwargs.get('custom_class', '') %} {# Get custom_class from implicit kwargs #}
+  <div class="mb-3 field-{{ field.id }}{% if field.flags.required and field.type != 'CSRFTokenField' %} required-field{% endif %}{% if field.errors %} has-error{% endif %}">
+    
+    {# --- LABEL --- #}
+    {% if label_visible and field.label and field.type != 'CSRFTokenField' and field.type != 'SubmitField' and field.type != 'HiddenField' %}
+      {{ field.label(class="form-label" + (" visually-hidden" if not label_visible else "")) }}
+    {% endif %}
+    
+    {# --- FIELD INPUT --- #}
+    {% if field.type == 'CSRFTokenField' %}
+      {{ field() }}
+
+    {% elif field.type == 'SubmitField' %}
+      {# For submit, class is usually primary, allow override via custom_class in kwargs #}
+      {{ field(class="btn " + (custom_class if custom_class else 'btn-primary'), **kwargs) }}
+
+    {% elif field.type == 'HiddenField' %}
+      {{ field(**kwargs) }}
+
+    {% elif field.type == 'BooleanField' %}
+      <div class="form-check">
+        {{ field(class="form-check-input" + (" is-invalid" if field.errors else "") + " " + custom_class, **kwargs) }}
+        {% if field.label %}
+          {{ field.label(class="form-check-label") }}
+        {% endif %}
+        {% if field.errors %}
+          <div class="invalid-feedback d-block">
+            {% for error in field.errors %}
+              <span>{{ error }}</span>{% if not loop.last %}<br>{% endif %}
+            {% endfor %}
+          </div>
+        {% endif %}
+      </div>
+
+    {% elif field.type == 'RadioField' %}
+        {% for subfield in field %}
+            <div class="form-check form-check-inline">
+                {{ subfield(class="form-check-input" + (" is-invalid" if field.errors else "") + " " + custom_class, **kwargs) }}
+                {{ subfield.label(class="form-check-label") }}
+            </div>
+        {% endfor %}
+        {% if field.errors %}
+            <div class="invalid-feedback d-block">
+                {% for error in field.errors %}
+                    <span>{{ error }}</span>{% if not loop.last %}<br>{% endif %}
+                {% endfor %}
+            </div>
+        {% endif %}
+    
+    {% elif field.type == 'SelectField' or field.type == 'SelectMultipleField' %}
+        {{ field(class="form-select" + (" is-invalid" if field.errors else "") + " " + custom_class, **kwargs) }}
+        {% if field.errors %}
+            <div class="invalid-feedback">
+                {% for error in field.errors %}
+                <span>{{ error }}</span>{% if not loop.last %}, {% endif %}
+                {% endfor %}
+            </div>
+        {% endif %}
+
+    {% else %} {# Default for StringField, TextAreaField, PasswordField etc. #}
+      {{ field(class="form-control" + (" is-invalid" if field.errors else "") + " " + custom_class, **kwargs) }}
+      {% if field.errors %}
+        <div class="invalid-feedback">
+          {% for error in field.errors %}
+            <span>{{ error }}</span>{% if not loop.last %}, {% endif %}
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endif %}
+    
+    {% if field.description and field.type != 'CSRFTokenField' and field.type != 'SubmitField' and field.type != 'HiddenField' %}
+      <small class="form-text text-muted">{{ field.description }}</small>
+    {% endif %}
+  </div>
+{% endmacro %}
+
+
+{# Simple macro - kept as is for now, as it doesn't use **kwargs in signature #}
+{% macro render_simple_field(field) %}
+    <div class="mb-3">
+        {% if field.type != 'CSRFTokenField' and field.type != 'SubmitField' and field.type != 'HiddenField' %}
+            {{ field.label(class="form-label") }}
+        {% endif %}
+
+        {% if field.type == 'SubmitField' %}
+             {{ field(class="btn btn-primary") }}
+        {% elif field.type == 'CSRFTokenField' or field.type == 'HiddenField' %}
+            {{ field() }}
+        {% else %}
+            {{ field(class="form-control" + (" is-invalid" if field.errors else "")) }}
+            {% if field.errors %}
+                <div class="invalid-feedback">
+                    {% for error in field.errors %}
+                        <span>{{ error }}</span>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endif %}
+    </div>
+{% endmacro %}

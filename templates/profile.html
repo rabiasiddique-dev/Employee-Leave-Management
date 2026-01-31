@@ -1,0 +1,154 @@
+{% extends "layout.html" %}
+
+{% block head_extra %}
+    <style>
+        .profile-container { max-width: 750px; margin: 30px auto; padding: 20px; background-color: #fff; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .page-title { font-size: 2em; color: #333; margin-bottom: 8px; font-weight: 600; text-align: center; }
+        .page-subtitle { font-size: 1.1em; color: #666; margin-bottom: 30px; text-align: center; }
+        
+        .settings-form-section { 
+            margin-bottom: 40px; 
+            padding: 25px; 
+            background-color: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .section-title { 
+            font-size: 1.5em; 
+            color: #007bff; 
+            margin-bottom: 20px; 
+            padding-bottom: 10px; 
+            border-bottom: 2px solid #007bff;
+            display: flex;
+            align-items: center;
+        }
+        .section-title i { margin-right: 10px; font-size: 1.1em; }
+        
+        .form-group { margin-bottom: 1.25rem; }
+        .form-control-label { display: block; margin-bottom: .5rem; font-weight: 500; color: #4a5568; }
+        .form-control { 
+            display: block; width: 100%; padding: .5rem .75rem; font-size: 1rem; 
+            line-height: 1.5; color: #495057; background-color: #fff; 
+            background-clip: padding-box; border: 1px solid #ced4da; 
+            border-radius: .25rem; box-sizing: border-box; 
+            transition: border-color .15s ease-in-out,box-shadow .15s ease-in-out;
+        }
+        .form-control:focus { border-color: #80bdff; outline: 0; box-shadow: 0 0 0 .2rem rgba(0,123,255,.25); }
+        .form-control-lg { padding: .65rem 1rem; font-size: 1.1rem; line-height: 1.5; border-radius: .3rem;}
+        
+        .is-invalid { border-color: #dc3545 !important;}
+        .invalid-feedback { display: none; width: 100%; margin-top: .25rem; font-size: .875em; color: #dc3545; }
+        .form-control.is-invalid + .invalid-feedback, 
+        .form-control.is-invalid ~ .invalid-feedback { display: block; }
+        
+        .btn { 
+            display: inline-block; font-weight: 500; color: #fff; text-align: center; 
+            vertical-align: middle; cursor: pointer; -webkit-user-select: none; 
+            -moz-user-select: none; user-select: none; background-color: #007bff; 
+            border: 1px solid #007bff; padding: .5rem 1rem; font-size: 1rem; 
+            line-height: 1.5; border-radius: .25rem; 
+            transition: color .15s ease-in-out,background-color .15s ease-in-out,border-color .15s ease-in-out,box-shadow .15s ease-in-out;
+        }
+        .btn:hover { opacity: 0.9; }
+        .btn i { margin-right: 5px; }
+        .btn-success { background-color: #28a745; border-color: #28a745;}
+        .btn-warning { color: #212529; background-color: #ffc107; border-color: #ffc107;}
+    </style>
+{% endblock %}
+
+{% block content %}
+<div class="profile-container"> 
+    <h1 class="page-title"><i class="fas fa-user-edit"></i> My Profile</h1>
+    <p class="page-subtitle">Update your personal information and password.</p>
+
+    {# Flash messages should be handled by layout.html #}
+
+    <section class="settings-form-section">
+        <h2 class="section-title"><i class="fas fa-id-card"></i> Edit Profile Information</h2>
+        <form method="POST" action="{{ url_for('profile') }}" novalidate>
+            {{ profile_form.hidden_tag() }} 
+            
+            <div class="form-group">
+                {{ profile_form.firstName.label(class="form-control-label") }}
+                {% if profile_form.firstName.errors %}
+                    {{ profile_form.firstName(class="form-control form-control-lg is-invalid", placeholder="Enter your first name") }}
+                    <div class="invalid-feedback">
+                        {% for error in profile_form.firstName.errors %}<span>{{ error }}</span><br>{% endfor %}
+                    </div>
+                {% else %}
+                    {{ profile_form.firstName(class="form-control form-control-lg", placeholder="Enter your first name") }}
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                {{ profile_form.lastName.label(class="form-control-label") }}
+                {% if profile_form.lastName.errors %}
+                    {{ profile_form.lastName(class="form-control form-control-lg is-invalid", placeholder="Enter your last name") }}
+                    <div class="invalid-feedback">
+                        {% for error in profile_form.lastName.errors %}<span>{{ error }}</span><br>{% endfor %}
+                    </div>
+                {% else %}
+                    {{ profile_form.lastName(class="form-control form-control-lg", placeholder="Enter your last name") }}
+                {% endif %}
+            </div>
+                        
+            <div class="form-group">
+                <button type="submit" name="{{ profile_form.submit_profile.name }}" class="btn btn-success">
+                    <i class="fas fa-save"></i> {{ profile_form.submit_profile.label.text }}
+                </button>
+            </div>
+        </form>
+    </section>
+
+    <section class="settings-form-section">
+        <h2 class="section-title"><i class="fas fa-key"></i> Change Password</h2>
+        <form method="POST" action="{{ url_for('profile') }}" novalidate>
+            {{ password_form.hidden_tag() }}
+
+            <div class="form-group">
+                {{ password_form.currentPassword.label(class="form-control-label") }}
+                {% if password_form.currentPassword.errors %}
+                    {{ password_form.currentPassword(class="form-control form-control-lg is-invalid", placeholder="Enter your current password") }}
+                    <div class="invalid-feedback">
+                        {% for error in password_form.currentPassword.errors %}<span>{{ error }}</span><br>{% endfor %}
+                    </div>
+                {% else %}
+                    {{ password_form.currentPassword(class="form-control form-control-lg", placeholder="Enter your current password") }}
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                {{ password_form.newPassword.label(class="form-control-label") }}
+                {% if password_form.newPassword.errors %}
+                    {{ password_form.newPassword(class="form-control form-control-lg is-invalid", placeholder="Enter new password (min. 6 characters)") }}
+                    <div class="invalid-feedback">
+                        {% for error in password_form.newPassword.errors %}<span>{{ error }}</span><br>{% endfor %}
+                    </div>
+                {% else %}
+                    {{ password_form.newPassword(class="form-control form-control-lg", placeholder="Enter new password (min. 6 characters)") }}
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                {{ password_form.confirmNewPassword.label(class="form-control-label") }}
+                {% if password_form.confirmNewPassword.errors %}
+                    {{ password_form.confirmNewPassword(class="form-control form-control-lg is-invalid", placeholder="Confirm new password") }}
+                    <div class="invalid-feedback">
+                        {% for error in password_form.confirmNewPassword.errors %}<span>{{ error }}</span><br>{% endfor %}
+                    </div>
+                {% else %}
+                    {{ password_form.confirmNewPassword(class="form-control form-control-lg", placeholder="Confirm new password") }}
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                 {# Corrected name attribute for the user's password change submit button #}
+                 <button type="submit" name="{{ password_form.submit_password_change.name }}" class="btn btn-warning">
+                    <i class="fas fa-lock"></i> {{ password_form.submit_password_change.label.text }}
+                </button>
+            </div>
+        </form>
+    </section>
+</div>
+{% endblock %}

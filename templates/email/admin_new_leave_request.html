@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>New Leave Request - LeaveFlow</title>
+<style>
+    body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+    .container { max-width: 600px; margin: 20px auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px; background-color: #f9f9f9; }
+    .header { background-color: #4CAF50; color: white; padding: 10px 20px; text-align: center; border-radius: 8px 8px 0 0; }
+    .content { padding: 20px; }
+    .button { display: inline-block; background-color: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; margin-top: 15px; }
+    .footer { text-align: center; margin-top: 30px; font-size: 0.8em; color: #777; }
+</style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h2>New Leave Request</h2>
+        </div>
+        <div class="content">
+            <p>Dear {{ admin_name }},</p>
+            <p>A new leave request has been submitted:</p>
+            <ul>
+                <li><strong>Applicant:</strong> {{ applicant_name }}</li>
+                <li><strong>Leave Type:</strong> {{ leave_type }}</li>
+                <li><strong>Period:</strong> {{ start_date }} to {{ end_date }}</li>
+                <li><strong>Reason:</strong> {{ reason | truncate(150) }}</li>
+            </ul>
+            <p>Please review this request at your earliest convenience.</p>
+            <p style="text-align: center;">
+                <!-- THIS IS THE CORRECTED LINE -->
+                <a href="{{ view_leave_link }}" class="button">View Leave Request</a>
+            </p>
+            <p>Thank you,</p>
+            <p>The LeaveFlow Team</p>
+        </div>
+        <div class="footer">
+            <p>© {{ datetime.now().year }} LeaveFlow. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>

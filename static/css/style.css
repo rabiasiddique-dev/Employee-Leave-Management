@@ -1,0 +1,1159 @@
+/* --- Global Styles & Variables --- */
+:root {
+    --primary-color: #4A90E2; /* Professional Blue */
+    --secondary-color: #50E3C2; /* Teal Accent */
+    --dark-color: #333A40;
+    --light-color: #f8f9fa; /* Changed to match user's previous body background intention */
+    --text-color: #454545;
+    --heading-font: 'Playfair Display', serif; /* Ensure these fonts are linked in your HTML */
+    --body-font: 'Poppins', sans-serif;      /* Ensure these fonts are linked in your HTML */
+    --border-radius: 8px;
+    --box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    --transition-speed: 0.3s ease;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: var(--body-font);
+    line-height: 1.6;
+    color: var(--text-color);
+    background-color: #eef2f5; /* Light grey background - keep as is from user's provided CSS */
+    /* padding-top: 70px; - Hata diya hai, kyunki sticky navbar khud space le legi, ya auth-container height adjust karega */
+}
+
+/* =============================== */
+/* === STICKY FOOTER STYLES ====== */
+/* =============================== */
+/* In styles ko body ke theek neeche rakhna behtar hoga, taake yeh global layout ko define karein. */
+html, body {
+    height: 100%; /* HTML aur Body ko poori height dein */
+}
+
+body {
+    display: flex; /* Flexbox enable karein */
+    flex-direction: column; /* Items ko upar se neeche stack karein */
+    min-height: 100vh; /* Make sure body takes full viewport height */
+}
+
+/* Is class ka naam aapke <main> tag ki class se match hona chahiye */
+/* Aapke case mein {% block content %} ek div ke andar wrap ho sakta hai, ya yeh page-content class directly uska parent ho. */
+/* Agar layout.html mein navbar fixed hai, toh isko padding-top ki zaroorat padegi */
+.page-content {
+    flex: 1 0 auto; /* Yeh magic line hai. Iska matlab hai ki yeh element jitni bhi khaali jagah hai, sab le lega. */
+    padding-top: 70px; /* Navbar height ke mutabiq adjust karein */
+    padding-bottom: 40px; /* Existing padding-bottom rakhein */
+}
+
+.site-footer {
+    flex-shrink: 0; /* Yeh footer ko shrink hone se rokega */
+}
+
+/* =============================== */
+
+
+.container {
+    width: 90%;
+    max-width: 1200px;
+    margin-left: auto;  /* For centering */
+    margin-right: auto; /* For centering */
+    padding: 0 15px;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: var(--heading-font);
+    color: var(--dark-color);
+    margin-bottom: 0.75rem;
+}
+
+a {
+    color: var(--primary-color);
+    text-decoration: none;
+    transition: color var(--transition-speed);
+}
+a:hover {
+    color: var(--secondary-color);
+    text-decoration: underline;
+}
+
+img {
+    max-width: 100%;
+    height: auto;
+    display: block; /* Removes extra space below image */
+}
+
+/* --- Accessibility: Skip to Main Content Link --- */
+.skip-to-main-content-link {
+    position: absolute;
+    left: -9999px;
+    top: auto;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    z-index: -999;
+    background-color: var(--primary-color);
+    color: #fff;
+    padding: 10px 15px;
+    text-decoration: none;
+    border-radius: 0 0 var(--border-radius) 0;
+}
+.skip-to-main-content-link:focus,
+.skip-to-main-content-link:active {
+    left: 0;
+    top: 0;
+    width: auto;
+    height: auto;
+    overflow: auto;
+    z-index: 1001;
+    box-shadow: 0 0 10px rgba(0,0,0,0.3);
+}
+
+/* --- Navbar --- */
+.navbar {
+    background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+    color: #fff;
+    padding: 1rem 0;
+    position: fixed; /* Keep it fixed as per your screenshot and existing CSS */
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 1000;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+.navbar .container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.navbar-brand {
+    font-family: var(--heading-font);
+    font-size: 1.8rem;
+    color: #fff !important; /* Ensure color override if needed */
+    font-weight: 700;
+    text-decoration: none !important;
+}
+.navbar-brand i {
+    margin-right: 8px;
+    color: #fff;
+}
+.navbar-brand:hover {
+    color: #f0f0f0 !important;
+    text-decoration: none !important;
+}
+.navbar-nav {
+    list-style: none;
+    display: flex;
+    align-items: center; /* Vertically align items */
+}
+.navbar-nav li {
+    margin-left: 15px; /* Reduced margin for better spacing */
+}
+.navbar-nav a.nav-link { /* Changed to target specific class for nav links */
+    color: #fff;
+    font-weight: 500;
+    padding: 8px 12px; /* Adjusted padding */
+    border-radius: 4px;
+    transition: background-color var(--transition-speed), color var(--transition-speed);
+}
+.navbar-nav a.nav-link:hover,
+.navbar-nav a.nav-link.active {
+    background-color: rgba(255,255,255,0.2);
+    text-decoration: none;
+}
+.nav-toggler { /* For mobile */
+    display: none;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0; /* Remove default padding */
+}
+.nav-toggler span {
+    display: block;
+    width: 25px;
+    height: 3px;
+    background-color: #fff;
+    margin: 5px 0;
+    transition: all var(--transition-speed);
+    border-radius: 1px; /* Slightly rounded bars */
+}
+
+/* Navbar Dropdown */
+.navbar-nav .nav-item-dropdown {
+    position: relative;
+}
+/* Yeh part hata dein, Font Awesome icon hi use karein */
+/* .navbar-nav .dropdown-toggle::after {
+    display: inline-block;
+    margin-left: .255em;
+    vertical-align: .255em;
+    content: "";
+    border-top: .3em solid;
+    border-right: .3em solid transparent;
+    border-bottom: 0;
+    border-left: .3em solid transparent;
+} */
+.navbar-nav .dropdown-toggle i.fa-caret-down {
+    margin-left: 5px;
+    transition: transform var(--transition-speed);
+}
+.navbar-nav .nav-item-dropdown:hover .dropdown-menu,
+.navbar-nav .nav-item-dropdown .dropdown-toggle:focus + .dropdown-menu, /* Accessibility for keyboard nav */
+.navbar-nav .nav-item-dropdown .dropdown-toggle:focus-within + .dropdown-menu {
+    display: block;
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+.navbar-nav .nav-item-dropdown:hover .dropdown-toggle i.fa-caret-down {
+    transform: rotate(180deg);
+}
+.navbar-nav .dropdown-menu {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background-color: #fff;
+    color: var(--dark-color);
+    min-width: 200px;
+    box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+    border-radius: var(--border-radius);
+    padding: 10px 0;
+    z-index: 1001;
+    list-style: none;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(10px);
+    transition: opacity var(--transition-speed), visibility var(--transition-speed), transform var(--transition-speed);
+}
+.navbar-nav .dropdown-menu li a { /* Generic links inside dropdown */
+    display: block;
+    padding: 10px 20px;
+    color: var(--text-color);
+    font-weight: 400;
+    white-space: nowrap;
+    text-decoration: none !important;
+}
+.navbar-nav .dropdown-menu li a:hover {
+    background-color: var(--light-color);
+    color: var(--primary-color) !important;
+}
+.navbar-nav .dropdown-menu .dropdown-divider {
+    height: 1px;
+    margin: .5rem 0;
+    overflow: hidden;
+    background-color: #e9ecef;
+}
+.navbar-nav .dropdown-menu li a i {
+    margin-right: 8px;
+    width: 16px;
+    text-align: center;
+}
+
+
+/* --- Page Content & Titles --- */
+/* .page-content moved up to sticky footer section for global layout */
+.page-title {
+    font-size: 2.5rem;
+    color: var(--primary-color);
+    margin-bottom: 0.5rem;
+    text-align: center;
+    padding-bottom: 10px;
+    border-bottom: 2px solid var(--secondary-color);
+    display: inline-block; /* Border only as wide as text */
+    margin-left: auto;    /* For display: block centering */
+    margin-right: auto;   /* For display: block centering */
+    display: block;       /* If full width border under centered text is desired */
+}
+.page-subtitle {
+    font-size: 1.1rem;
+    color: #666;
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+/* --- Authentication Forms (Login/Register) --- */
+.auth-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    /* min-height calculation ko adjust karein agar body mein padding-top hai */
+    min-height: calc(100vh - 70px); /* Assuming 70px is navbar height, aur footer neeche hoga */
+    padding: 20px;
+}
+.auth-card {
+    background: #fff;
+    padding: 30px 40px; /* User's existing padding */
+    border-radius: var(--border-radius); /* User's existing border-radius */
+    box-shadow: var(--box-shadow); /* User's existing box-shadow */
+    width: 100%;
+    max-width: 480px;
+    text-align: center;
+    animation: fadeInScaleUp 0.5s ease-out; /* User's existing animation */
+}
+@keyframes fadeInScaleUp {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+}
+.auth-title {
+    font-size: 2rem; /* User's existing font-size */
+    color: var(--primary-color); /* User's existing color */
+    margin-bottom: 10px;
+}
+.auth-title i {
+    margin-right: 10px;
+    color: var(--primary-color); /* User's existing color for icon */
+}
+.auth-subtitle {
+    color: #777; /* User's existing color */
+    margin-bottom: 25px; /* User's existing margin */
+}
+.auth-form .form-group {
+    margin-bottom: 20px;
+    text-align: left;
+}
+.auth-form .form-group-row {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+.auth-form .form-group-row .form-group {
+    flex: 1;
+    margin-bottom: 0;
+}
+.auth-form label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: var(--dark-color);
+}
+.auth-form label i {
+    margin-right: 6px;
+    color: var(--primary-color);
+}
+.auth-form input[type="text"],
+.auth-form input[type="email"],
+.auth-form input[type="password"],
+.auth-form input[type="date"],
+.auth-form select,
+.auth-form textarea {
+    width: 100%;
+    padding: 12px 15px;
+    border: 1px solid #ccc; /* User's existing border */
+    border-radius: 6px; /* User's existing border-radius */
+    font-size: 1rem;
+    transition: border-color var(--transition-speed), box-shadow var(--transition-speed);
+}
+.auth-form input:focus,
+.auth-form select:focus,
+.auth-form textarea:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.2);
+}
+.readonly-input {
+    background-color: #e9ecef;
+    cursor: not-allowed;
+}
+
+/* --- NEW: Forgot password link container styles --- */
+.forgot-password-link-container {
+    text-align: right;
+    margin-top: -10px; /* Password input ke margin-bottom ko compensate karega */
+    margin-bottom: 15px; /* Login button se space */
+}
+
+.forgot-password-link {
+    display: inline-block; /* text-align: right ke liye */
+    font-size: 0.9rem; /* Use rem for consistency */
+    color: var(--primary-color);
+    text-decoration: none;
+    transition: color var(--transition-speed), text-decoration var(--transition-speed);
+}
+
+.forgot-password-link:hover {
+    color: var(--secondary-color);
+    text-decoration: underline;
+}
+/* --- END NEW: Forgot password link container styles --- */
+
+
+.auth-switch {
+    margin-top: 25px;
+    font-size: 0.9rem;
+}
+.checkbox-group {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+    text-align: left; /* Align checkbox label properly */
+}
+.checkbox-group input[type="checkbox"] {
+    width: auto;
+    margin-right: 10px;
+    transform: scale(1.2);
+    vertical-align: middle; /* Align checkbox with label text */
+}
+.checkbox-group label {
+    margin-bottom: 0;
+    font-weight: normal;
+    vertical-align: middle;
+}
+
+
+/* --- Buttons --- */
+.btn {
+    display: inline-block;
+    padding: 12px 25px; /* User's existing padding */
+    border: none;
+    border-radius: 6px; /* User's existing border-radius */
+    font-size: 1rem; /* User's existing font-size */
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color var(--transition-speed), transform var(--transition-speed), box-shadow var(--transition-speed);
+    text-align: center;
+    text-decoration: none !important; /* Ensure buttons don't get underlines from global 'a' styles */
+}
+.btn i { margin-right: 8px; }
+
+.btn-primary { background-color: var(--primary-color); color: #fff !important; }
+.btn-primary:hover { background-color: #3a7bc8; transform: translateY(-2px); box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
+
+.btn-secondary { background-color: #6c757d; color: #fff !important; }
+.btn-secondary:hover { background-color: #5a6268; transform: translateY(-2px); box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
+
+.btn-success { background-color: #28a745; color: white !important; }
+.btn-success:hover { background-color: #218838; transform: translateY(-2px); box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
+
+.btn-danger { background-color: #dc3545; color: white !important; }
+.btn-danger:hover { background-color: #c82333; transform: translateY(-2px); box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
+
+.btn-block { display: block; width: 100%; }
+.btn-sm { padding: 8px 12px; font-size: 0.875rem; }
+
+
+/* --- Alerts / Flash Messages --- */
+.alert {
+    padding: 15px;
+    margin: 0 auto 20px auto; /* Centered with margin - User's existing style */
+    border: 1px solid transparent;
+    border-radius: var(--border-radius);
+    animation: fadeInSlideDown 0.5s ease-out;
+    max-width: 800px; /* Consistent max-width for alerts */
+}
+/* @keyframes fadeInSlideDown moved to global styles - this is correct */
+@keyframes fadeInSlideDown {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+.alert-success { color: #155724; background-color: #d4edda; border-color: #c3e6cb; }
+.alert-danger { color: #721c24; background-color: #f8d7da; border-color: #f5c6cb; }
+.alert-warning { color: #856404; background-color: #fff3cd; border-color: #ffeeba; }
+.alert-info { color: #0c5460; background-color: #d1ecf1; border-color: #bee5eb; }
+
+
+/* --- Cards (Dashboard, Profile sections) --- */
+.card {
+    background: #fff;
+    padding: 25px;
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    margin-bottom: 25px;
+    transition: transform var(--transition-speed), box-shadow var(--transition-speed);
+}
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+}
+.card-title {
+    font-size: 1.5rem;
+    color: var(--primary-color);
+    margin-bottom: 15px;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
+}
+.card-title i { margin-right: 10px; }
+
+
+/* --- Dashboard Specific --- */
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 25px;
+}
+.leave-balance-list, .leave-list, .quick-actions-card ul {
+    list-style: none;
+    padding-left: 0;
+}
+.leave-balance-list li, .leave-list li, .quick-actions-card ul li {
+    padding: 10px 0; /* Increased padding */
+    border-bottom: 1px dashed #eee;
+    font-size: 0.95rem;
+}
+.leave-balance-list li:last-child,
+.leave-list li:last-child,
+.quick-actions-card ul li:last-child {
+    border-bottom: none;
+}
+.leave-balance-list strong {
+    color: var(--dark-color);
+}
+.leave-list .leave-dates {
+    font-weight: 600;
+    margin-right: 10px;
+}
+.leave-type-badge {
+    display: inline-block;
+    padding: 4px 10px; /* Adjusted padding */
+    border-radius: 12px; /* More rounded */
+    font-size: 0.8rem;
+    color: #fff;
+    text-transform: capitalize;
+    font-weight: 500;
+}
+.type-annual { background-color: #007bff; }
+.type-sick { background-color: #ffc107; color: #333 !important;}
+.type-casual { background-color: #28a745; }
+.type-unpaid { background-color: #6c757d; }
+
+.quick-actions-card a {
+    display: block;
+    color: var(--text-color);
+    padding: 8px 0; /* Add padding to make clickable area larger */
+}
+.quick-actions-card a:hover {
+    color: var(--primary-color);
+    text-decoration: none;
+    background-color: #f8f9fa; /* Light hover for links */
+    margin-left: -10px; /* Slight visual effect on hover */
+    margin-right: -10px;
+    padding-left: 10px;
+}
+.quick-actions-card i { color: var(--primary-color); margin-right: 8px;}
+
+
+/* --- Forms (Apply Leave, Profile, Settings) --- */
+.form-page-container {
+    max-width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+}
+.form-card { /* Re-use for consistency */
+    background: #fff;
+    padding: 30px;
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+}
+.styled-form .form-group {
+    margin-bottom: 20px;
+}
+.styled-form .form-group-row {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 20px;
+}
+.styled-form .form-group-row .form-group {
+    flex: 1;
+    margin-bottom: 0;
+}
+.styled-form label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: var(--dark-color);
+}
+.styled-form label i { margin-right: 6px; color: var(--primary-color); }
+
+.styled-form input[type="text"],
+.styled-form input[type="email"],
+.styled-form input[type="password"],
+.styled-form input[type="date"],
+.styled-form select,
+.styled-form textarea {
+    width: 100%;
+    padding: 12px 15px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 1rem;
+    font-family: var(--body-font);
+    transition: border-color var(--transition-speed), box-shadow var(--transition-speed);
+}
+.styled-form input:focus,
+.styled-form select:focus,
+.styled-form textarea:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.2);
+}
+.styled-form textarea {
+    resize: vertical;
+    min-height: 100px;
+}
+.btn-submit-container { /* For centering button if needed */
+    text-align: center;
+    margin-top: 20px;
+}
+.btn-submit {
+    margin-top: 10px; /* Or remove if using container */
+}
+.leave-balance-inline {
+    list-style: none;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    font-size: 0.9rem;
+    color: #555;
+    margin-bottom: 20px; /* Space below balances */
+}
+.leave-balance-inline li { background: #f0f0f0; padding: 5px 10px; border-radius: 4px; }
+
+/* Profile Page Specific */
+.profile-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 30px;
+}
+@media (min-width: 992px) {
+    .profile-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+.small-text { font-size: 0.85rem; color: #777; margin-top: 10px; }
+
+
+/* --- Tables (My Leaves, Admin Dashboard) --- */
+.table-page-container {
+    margin-left: auto;
+    margin-right: auto;
+}
+.table-responsive {
+    overflow-x: auto;
+    background: #fff;
+    padding: 20px;
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+}
+.styled-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.95rem;
+}
+.styled-table th, .styled-table td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+    vertical-align: middle; /* Better vertical alignment */
+}
+.styled-table thead th {
+    background-color: #f8f9fa;
+    color: var(--dark-color);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap; /* Prevent header text wrapping */
+}
+.styled-table tbody tr:hover {
+    background-color: #f1f1f1;
+}
+.styled-table .reason-cell {
+    max-width: 200px; /* Limit width */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    cursor: help; /* Indicate that it's truncated */
+}
+.styled-table .reason-cell:hover { /* Show full reason on hover (optional) */
+    white-space: normal;
+    overflow: visible;
+}
+.status-badge {
+    padding: 5px 12px; /* Adjusted padding */
+    border-radius: 15px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #fff !important;
+    text-transform: capitalize;
+    white-space: nowrap;
+}
+.status-pending { background-color: #ffc107; color: #333 !important; }
+.status-approved { background-color: #28a745; }
+.status-rejected { background-color: #dc3545; }
+.status-cancelled { background-color: #6c757d; } /* Example new status */
+
+.empty-state {
+    text-align: center;
+    padding: 50px 20px;
+    background: #fff;
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+}
+.empty-state i {
+    font-size: 4rem;
+    color: var(--secondary-color);
+    margin-bottom: 20px;
+}
+.empty-state p {
+    font-size: 1.2rem;
+    color: #777;
+    margin-bottom: 20px;
+}
+
+/* Admin Dashboard Specific */
+.admin-section { margin-bottom: 40px; }
+.admin-section .section-title {
+    font-size: 1.8rem;
+    color: var(--dark-color);
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #ddd;
+}
+.action-buttons .btn { margin-right: 5px; margin-bottom: 5px;}
+
+
+/* --- Modal (for Admin Reject) --- */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1001;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.5);
+    align-items: center; /* For flex display */
+    justify-content: center; /* For flex display */
+    /* display: flex; */ /* Uncomment to use flex centering for modal */
+}
+.modal-content {
+    background-color: #fff;
+    margin: auto; /* Works with display:block or if modal is not display:flex */
+    padding: 25px 30px;
+    border-radius: var(--border-radius);
+    box-shadow: 0 5px 25px rgba(0,0,0,0.2);
+    width: 90%;
+    max-width: 500px;
+    animation: slideInFromTop 0.4s ease-out;
+    position: relative; /* For close button positioning */
+}
+@keyframes slideInFromTop {
+    from { transform: translateY(-50px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+.close-button {
+    color: #aaa;
+    position: absolute; /* Position relative to modal-content */
+    top: 10px;
+    right: 15px;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+    line-height: 1; /* Ensure it aligns well */
+}
+.close-button:hover, .close-button:focus {
+    color: var(--dark-color);
+    text-decoration: none;
+}
+.modal h3 { margin-top: 0; color: var(--primary-color); }
+.modal .form-group { margin-bottom: 15px; }
+.modal textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; min-height: 80px; }
+.modal .modal-actions { margin-top: 20px; text-align: right; } /* Container for modal buttons */
+.modal .modal-actions .btn-danger { margin-right: 10px; }
+
+
+/* Import Font Awesome if not already linked in your base template */
+/* @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css'); */
+
+/* --- Footer General Styling --- */
+.site-footer {
+    background-color: #222831; /* Dark background */
+    color: #adb5bd; /* Light grey text */
+    padding: 70px 0 30px; /* More padding at the top */
+    font-family: 'Roboto', 'Arial', sans-serif; /* Modern sans-serif font */
+    line-height: 1.7;
+    font-size: 0.95em;
+   /* border-top: 5px solid #00adb5; /* Accent color top border */
+}
+
+.site-footer .container {
+    max-width: 1200px; /* Or your theme's container width */
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.footer-content {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 30px; /* Space between columns */
+    margin-bottom: 40px;
+}
+
+.footer-section {
+    flex: 1;
+    min-width: 220px; /* Minimum width for columns */
+    margin-bottom: 30px;
+    opacity: 0; /* For animation */
+    transform: translateY(20px); /* For animation */
+    animation: fadeInUp 0.5s ease-out forwards;
+}
+
+/* Staggered animation for sections */
+.footer-section.footer-about { animation-delay: 0.1s; }
+.footer-section.footer-links { animation-delay: 0.2s; }
+.footer-section.footer-legal { animation-delay: 0.3s; }
+.footer-section.footer-social { animation-delay: 0.4s; }
+
+@keyframes fadeInUp {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.footer-title {
+    color: #eeeeee; /* Brighter white for titles */
+    font-size: 1.4em;
+    margin-bottom: 25px;
+    position: relative;
+    padding-bottom: 10px;
+    font-weight: 500;
+}
+
+.footer-title::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 50px;
+    height: 3px;
+    background-color: #00adb5; /* Accent color */
+    border-radius: 2px;
+}
+
+/* --- Footer About Section --- */
+.footer-about .fa-leaf {
+    color: #00adb5; /* Accent color for the logo icon */
+    margin-right: 8px;
+}
+.footer-about p {
+    margin-bottom: 20px;
+}
+.contact-info span {
+    display: block;
+    margin-bottom: 10px;
+    transition: color 0.3s ease;
+}
+.contact-info span i {
+    margin-right: 10px;
+    color: #00adb5; /* Accent color */
+}
+.contact-info span:hover {
+    color: #ffffff;
+}
+
+
+/* --- Footer Links & Legal Section --- */
+.footer-links ul,
+.footer-legal ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.footer-links ul li,
+.footer-legal ul li {
+    margin-bottom: 12px;
+}
+
+.footer-links ul li a,
+.footer-legal ul li a {
+    color: #adb5bd;
+    text-decoration: none;
+    transition: color 0.3s ease, padding-left 0.3s ease;
+    display: flex; /* Align icon and text */
+    align-items: center;
+}
+
+.footer-links ul li a i,
+.footer-legal ul li a i {
+    margin-right: 10px;
+    color: #00adb5; /* Accent color for icons */
+    width: 20px; /* For fa-fw alignment */
+    text-align: center;
+}
+
+.footer-links ul li a:hover,
+.footer-legal ul li a:hover {
+    color: #ffffff; /* White on hover */
+    padding-left: 8px;
+}
+
+/* --- Footer Social Section --- */
+.social-links {
+    margin-bottom: 25px;
+}
+.social-icon {
+    display: inline-block;
+    width: 40px;
+    height: 40px;
+    line-height: 40px;
+    text-align: center;
+    border-radius: 50%;
+    background-color: #393e46; /* Darker grey for icon background */
+    color: #eeeeee;
+    font-size: 1.1em;
+    margin-right: 10px;
+    transition: transform 0.3s ease, background-color 0.3s ease;
+}
+
+.social-icon:hover {
+    transform: translateY(-3px) scale(1.1); /* Lift and scale effect */
+}
+.social-icon.facebook:hover { background-color: #00adb5; }
+.social-icon.twitter:hover { background-color: #00adb5; }
+.social-icon.linkedin:hover { background-color: #00adb5; }
+.social-icon.instagram:hover { background-color: #00adb5; }
+
+
+/* Newsletter */
+.newsletter h5 {
+    color: #eeeeee;
+    margin-bottom: 10px;
+    font-size: 1.1em;
+}
+.newsletter-form {
+    display: flex;
+    max-width: 280px; /* Limit width */
+}
+.newsletter-form input[type="email"] {
+    flex-grow: 1;
+    padding: 10px 12px;
+    border: 1px solid #393e46;
+    background-color: #2c333b;
+    color: #eeeeee;
+    border-radius: 4px 0 0 4px;
+    outline: none;
+    transition: border-color 0.3s ease;
+}
+.newsletter-form input[type="email"]::placeholder {
+    color: #777;
+}
+.newsletter-form input[type="email"]:focus {
+    border-color: #00adb5;
+}
+.newsletter-form button {
+    padding: 10px 15px;
+    background-color: #00adb5;
+    color: white;
+    border: none;
+    cursor: pointer;
+    border-radius: 0 4px 4px 0;
+    transition: background-color 0.3s ease;
+}
+.newsletter-form button:hover {
+    background-color: #007a7f; /* Darker shade of accent */
+}
+
+
+/* --- Footer Bottom --- */
+.footer-bottom {
+    text-align: center;
+    padding-top: 30px;
+    margin-top: 40px;
+    border-top: 1px solid #393e46; /* Separator line */
+    font-size: 0.9em;
+    color: #777; /* Dimmer text for copyright */
+}
+
+.footer-bottom .animated-heart {
+    color: #e25555; /* Original heart color */
+    display: inline-block; /* Needed for transform */
+    animation: pulseHeart 1.5s infinite ease-in-out;
+}
+
+@keyframes pulseHeart {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.3);
+    }
+}
+
+/* --- Responsive Design --- */
+@media (max-width: 992px) {
+    .footer-section {
+        flex-basis: calc(50% - 15px); /* Two columns on tablets */
+    }
+    .footer-section.footer-about,
+    .footer-section.footer-social {
+        flex-basis: calc(50% - 15px); /* Ensure about and social also take 50% */
+    }
+}
+
+@media (max-width: 768px) {
+    .footer-content {
+        flex-direction: column; /* Stack columns on smaller screens */
+        align-items: center; /* Center content when stacked */
+        text-align: center;
+    }
+    .footer-section {
+        min-width: 100%;
+        margin-bottom: 40px;
+    }
+    .footer-title::after { /* Center the underline */
+        left: 50%;
+        transform: translateX(-50%);
+    }
+    .contact-info span {
+        justify-content: center;
+    }
+    .footer-links ul li a,
+    .footer-legal ul li a {
+        justify-content: center; /* Center link items */
+    }
+    .social-links {
+        text-align: center; /* Center social icons */
+    }
+    .newsletter-form {
+        margin: 0 auto; /* Center newsletter form */
+    }
+}
+
+
+/* ========================================= */
+/* ====== Notifications Page Specific ====== */
+/* ========================================= */
+
+.notifications-container {
+    padding: 20px 0;
+}
+.notifications-container h2 {
+    margin-bottom: 25px;
+    color: var(--dark-color); /* Use variable */
+    border-bottom: 2px solid #e9ecef;
+    padding-bottom: 10px;
+    font-weight: 500;
+    font-size: 1.75rem;
+}
+
+/* Container for the "Mark All as Read" button */
+.mark-all-btn-container {
+    margin-bottom: 20px;
+    text-align: right;
+}
+
+/* Notifications list styles */
+.notifications-list {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
+.notification-item {
+    background-color: #ffffff;
+    border: 1px solid #dee2e6;
+    margin-bottom: 12px;
+    padding: 18px 25px;
+    border-radius: var(--border-radius); /* Use variable */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: background-color var(--transition-speed), box-shadow var(--transition-speed);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+.notification-item:hover {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+    border-color: #adb5bd;
+}
+.notification-item.unread {
+    background-color: #f0f8ff;
+    font-weight: 500;
+    border-left: 5px solid var(--primary-color); /* Use variable */
+    padding-left: 20px;
+}
+.notification-message {
+    flex-grow: 1;
+    margin-right: 20px;
+    font-size: 0.98rem;
+    color: var(--text-color); /* Use variable */
+    line-height: 1.5;
+}
+.notification-item.unread .notification-message {
+    color: #0056b3; /* Can be a darker shade of primary or specific */
+}
+.notification-link {
+    color: var(--primary-color); /* Use variable */
+    text-decoration: none;
+    font-weight: 500;
+    margin-left: 8px;
+}
+.notification-link:hover {
+    text-decoration: underline;
+    color: var(--secondary-color); /* Use variable on hover */
+}
+.timestamp {
+    font-size: 0.8em;
+    color: #6c757d;
+    display: block;
+    margin-top: 5px;
+}
+.notification-actions {
+    flex-shrink: 0;
+    white-space: nowrap;
+}
+
+/* Styling for buttons inside the notification actions area (like "Mark as Read") */
+.notification-actions button {
+    margin-left: 10px;
+    padding: 6px 14px; /* Default padding for action buttons */
+    font-size: 0.85rem; /* Default font size for action buttons */
+}
+
+/* --- Empty state for no notifications --- */
+.no-notifications {
+    text-align: center;
+    padding: 40px 20px;
+    color: #6c757d;
+    font-size: 1.1rem;
+    border: 1px dashed #ced4da;
+    border-radius: var(--border-radius); /* Use variable */
+    margin-top: 20px;
+    background-color: var(--light-color); /* Use variable */
+}
+
+
+/* --- Fix for Double Dropdown Arrow --- */
+/* Select the anchor tag with dropdown-toggle class */
+.navbar .navbar-nav .dropdown-toggle {
+    /* Hide the default dropdown arrow from browser/framework */
+    -webkit-appearance: none; /* For Chrome, Safari, Opera */
+    -moz-appearance: none;    /* For Firefox */
+    appearance: none;         /* Standard property */
+}
+
+/* 
+   Some frameworks like Bootstrap use a pseudo-element for the arrow.
+   Agar upar wale code se kaam na bane, toh yeh wala code use karein.
+   Yeh har haal mein default arrow ko hata dega.
+*/
+.navbar .navbar-nav .dropdown-toggle::after {
+    display: none !important;
+}
+
+/* 
+   (BONUS UI IMPROVEMENT)
+   Yeh code aapke Font Awesome wale arrow ko flip karega jab dropdown khulega.
+*/
+.navbar .navbar-nav .dropdown-toggle .fa-caret-down {
+    transition: transform 0.2s ease-in-out;
+}
+
+/* Jab dropdown open ho, toh arrow ko upar ki taraf ghuma dein */
+.navbar .navbar-nav .nav-item-dropdown.open .dropdown-toggle .fa-caret-down {
+    transform: rotate(180deg);
+}

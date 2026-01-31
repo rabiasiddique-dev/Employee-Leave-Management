@@ -1,0 +1,54 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="container page-content">
+    <h1 class="page-title">Privacy Policy for LeaveFlow</h1>
+    <p class="page-subtitle">Last updated: <span id="lastUpdatedDate"></span></p>
+
+    <div class="content-box">
+        <p>Welcome to LeaveFlow. We are committed to protecting your personal information and your right to privacy. If you have any questions or concerns about this privacy notice, or our practices with regards to your personal information, please contact us at rabiakhanzadii@leaveflow.com.</p>
+        
+        <p>This privacy notice describes how we might use your information if you use our services. In this privacy notice, if we refer to "we," "us," or "our," we are referring to LeaveFlow.</p>
+
+        <h2 class="content-subtitle">1. WHAT INFORMATION DO WE COLLECT?</h2>
+        <p><strong>Personal information you disclose to us.</strong> We collect personal information that you voluntarily provide to us when you register on the application, express an interest in obtaining information about us or our products and services, or otherwise when you contact us.</p>
+        <p>The personal information that we collect depends on the context of your interactions with us and the application, the choices you make, and the products and features you use. The personal information we collect may include the following:</p>
+        <ul>
+            <li><strong>Personal Information Provided by You:</strong> Name, email address, employee ID, job title, and department.</li>
+            <li><strong>Leave Data:</strong> Information related to your leave requests, including dates, leave type (e.g., Annual, Sick, Casual), reasons for leave (if provided), and the status of these requests.</li>
+            <li><strong>Credentials:</strong> We collect passwords and similar security information used for authentication and account access.</li>
+        </ul>
+
+        <h2 class="content-subtitle">2. HOW DO WE USE YOUR INFORMATION?</h2>
+        <p>We use personal information collected via our application for a variety of business purposes described below. We process your personal information for these purposes in reliance on our legitimate business interests, in order to enter into or perform a contract with you, with your consent, and/or for compliance with our legal obligations.</p>
+        <ul>
+            <li><strong>To facilitate account creation and logon process.</strong></li>
+            <li><strong>To manage user accounts.</strong> We may use your information for the purposes of managing your account and keeping it in working order.</li>
+            <li><strong>To manage your leave requests.</strong> This is the core functionality of our service.</li>
+            <li><strong>To send administrative information to you.</strong> We may use your personal information to send you product, service, and new feature information and/or information about changes to our terms, conditions, and policies.</li>
+        </ul>
+
+        <h2 class="content-subtitle">3. WILL YOUR INFORMATION BE SHARED WITH ANYONE?</h2>
+        <p>We only share information with your consent, to comply with laws, to provide you with services, to protect your rights, or to fulfill business obligations. Your direct managers and HR administrators will have access to your leave data for approval and record-keeping purposes.</p>
+        <p>We do not share, sell, rent, or trade any of your information with third parties for their promotional purposes.</p>
+
+        <h2 class="content-subtitle">4. HOW DO WE KEEP YOUR INFORMATION SAFE?</h2>
+        <p>We have implemented appropriate technical and organizational security measures designed to protect the security of any personal information we process. These include using secure protocols (HTTPS) and hashing passwords. However, despite our safeguards and efforts to secure your information, no electronic transmission over the Internet or information storage technology can be guaranteed to be 100% secure, so we cannot promise or guarantee that hackers, cybercriminals, or other unauthorized third parties will not be able to defeat our security and improperly collect, access, steal, or modify your information.</p>
+
+        <h2 class="content-subtitle">5. HOW CAN YOU REVIEW, UPDATE, OR DELETE THE DATA WE COLLECT FROM YOU?</h2>
+        <p>Based on the applicable laws of your country, you may have the right to request access to the personal information we collect from you, change that information, or delete it in some circumstances. To request to review, update, or delete your personal information, please visit your "My Profile" and "Account Settings" pages or contact us directly.</p>
+    </div>
+</div>
+
+<script>
+    // Simple script to set the date dynamically
+    document.addEventListener('DOMContentLoaded', function() {
+        const dateSpan = document.getElementById('lastUpdatedDate');
+        if (dateSpan) {
+            const today = new Date();
+            const options = { year: 'numeric', month: 'long', day: 'numeric' };
+            dateSpan.textContent = today.toLocaleDateString('en-US', options);
+        }
+    });
+</script>
+{% endblock %}

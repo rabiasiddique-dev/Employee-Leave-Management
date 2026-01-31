@@ -1,0 +1,146 @@
+{% extends "layout.html" %}
+
+{% block head_extra %}
+    <style>
+        .report-view-container { max-width: 1100px; margin: 20px auto; padding: 20px; background-color: #fff; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .report-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid #eee; }
+        .report-header .page-title { margin-bottom: 0; }
+        .page-title { font-size: 1.8em; color: #333; }
+        
+        .styled-table { width: 100%; border-collapse: collapse; margin-bottom: 1.5rem; background-color: #fff; font-size: 0.9rem; }
+        .styled-table th, .styled-table td { padding: 0.8rem 1rem; vertical-align: top; border: 1px solid #dee2e6; text-align: left; }
+        .styled-table thead th { 
+            vertical-align: bottom; 
+            background-color: #f0f2f5; /* Slightly different background for header */
+            color: #333; /* Darker text for header */
+            font-weight: 600;
+            border-bottom-width: 2px;
+            text-transform: capitalize; /* Capitalize header text */
+        }
+        .styled-table tbody tr:nth-of-type(odd) { background-color: #fdfdfd; }
+        .styled-table tbody tr:hover { background-color: #f1f1f1; } /* Softer hover */
+        .styled-table ul { padding-left: 20px; margin-bottom: 0; list-style-type: disc; }
+        .styled-table ul li { margin-bottom: 0.25rem; }
+        
+        .empty-state { text-align: center; padding: 50px 20px; color: #777; background-color: #f9f9f9; border: 1px dashed #ddd; border-radius: 5px; margin-top: 20px;}
+        .empty-state i { font-size: 3em; margin-bottom: 15px; color: #007bff; }
+        .empty-state p { font-size: 1.1em; }
+
+        .btn { 
+            display: inline-block; font-weight: 500; color: #fff; text-align: center; 
+            vertical-align: middle; cursor: pointer; -webkit-user-select: none; 
+            -moz-user-select: none; user-select: none; background-color: #007bff; 
+            border: 1px solid #007bff; padding: .5rem 1rem; font-size: 0.9rem; 
+            line-height: 1.5; border-radius: .25rem; 
+            text-decoration: none;
+            transition: opacity .15s ease-in-out;
+        }
+        .btn:hover { opacity: 0.85; }
+        .btn i { margin-right: 6px; }
+        .btn-outline-secondary { color: #6c757d; border-color: #6c757d; background-color: transparent; }
+        .btn-outline-secondary:hover { color: #fff; background-color: #6c757d; }
+        .btn-secondary { color: #fff; background-color: #6c757d; border-color: #6c757d; }
+        .btn-sm { padding: .35rem .7rem; font-size: .8rem; line-height: 1.5; border-radius: .2rem; }
+
+        .report-actions { margin-top: 20px; text-align: right; } 
+
+        @media print {
+            body { margin: 0; padding: 0; background-color: #fff; font-family: Arial, sans-serif; }
+            .report-view-container, .report-view-container * { visibility: visible !important; } 
+            .report-view-container { 
+                position: static !important; /* Changed from absolute for better flow */
+                left: 0; 
+                top: 0; 
+                width: 100% !important; 
+                margin: 0 !important; 
+                padding: 20px !important; 
+                box-shadow: none !important; 
+                border: none !important;
+            }
+            .no-print, header.site-header-wrapper, footer.site-footer, .navbar, 
+            .admin-dashboard-container > .mt-3, /* Back button div */
+            .flash-messages-container /* Hide flash messages in print */
+             { 
+                display: none !important; 
+            }
+            .page-title { font-size: 1.6em !important; text-align: center; margin-bottom: 15px !important; color: #000 !important;}
+            .styled-table { font-size: 9pt !important; width: 100% !important; border: 1px solid #000 !important; border-collapse: collapse !important;}
+            .styled-table th, .styled-table td { border: 1px solid #000 !important; padding: 5px 8px !important; color: #000 !important;}
+            .styled-table thead th { background-color: #eee !important; -webkit-print-color-adjust: exact; print-color-adjust: exact;}
+            .styled-table tbody tr:nth-of-type(odd) { background-color: #f9f9f9 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact;}
+
+            /* Ensure table rows don't break across pages if possible */
+            tr, td, th { page-break-inside: avoid !important; } 
+            /* Add a title to the printed page */
+            @page { margin: 1cm; }
+            .report-header .page-title::before { content: "{{ report_title | default('Leave Report') }} - LeaveFlow\A"; white-space: pre; display: block; text-align: center; font-size: 10pt; margin-bottom: 10px; }
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+<div class="report-view-container">
+    <div class="report-header">
+        <h1 class="page-title"><i class="fas fa-file-invoice"></i> {{ report_title | default("Leave Report") }}</h1>
+        <div class="report-actions no-print">
+            <button onclick="window.print()" class="btn btn-sm btn-outline-secondary">
+                <i class="fas fa-print"></i> Print Report
+            </button>
+        </div>
+    </div>
+
+    {% if report_data %}
+        <div class="table-responsive">
+            <table class="styled-table">
+                <thead>
+                    <tr>
+                        {% if report_data[0] %}
+                            {% for key in report_data[0].keys() %}
+                                <th>{{ key.replace('_', ' ')|replace(' Val', '')|title }}</th> {# Removed ' Val' from employee_id_val #}
+                            {% endfor %}
+                        {% else %}
+                            <th>Details</th> {# Fallback header #}
+                        {% endif %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in report_data %}
+                    <tr>
+                        {% for key, value in item.items() %}
+                            <td>
+                                
+                                {# Specific handling for employee_consumption's leave_types_summary #}
+                                {% elif report_type == 'employee_consumption' and key == 'leave_types_summary' %}
+                                    {% if value is mapping and value %} {# Check if it's a non-empty dictionary #}
+                                    <ul>
+                                        {% for type, days in value.items() %}
+                                            <li>{{ type|title }}: {{ days }} day(s)</li>
+                                        {% endfor %}
+                                    </ul>
+                                    {% else %}
+                                        N/A
+                                    {% endif %}
+                                {% else %}
+                                    {{ value if value is not none else 'N/A' }}
+                                {% endif %}
+                            </td>
+                        {% endfor %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <i class="fas fa-info-circle"></i>
+            <p>No data available to display for this report.</p>
+        </div>
+    {% endif %}
+
+    <div class="mt-3 no-print" style="text-align: left;">
+        <a href="{{ url_for('admin_reports_dashboard') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Reports Dashboard
+        </a>
+    </div>
+</div>
+{% endblock %}

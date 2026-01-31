@@ -1,0 +1,91 @@
+{% extends "layout.html" %}
+
+{% block head_extra %}
+<style>
+    .policy-container {
+        max-width: 800px;
+        margin: 30px auto;
+        padding: 25px;
+        background-color: #fff;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        line-height: 1.7;
+    }
+    .policy-container h1 {
+        text-align: center;
+        color: #337ab7;
+        margin-bottom: 25px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #eee;
+    }
+    .policy-container h2 {
+        color: #555;
+        margin-top: 30px;
+        margin-bottom: 15px;
+        font-size: 1.5em;
+    }
+    .policy-container p, .policy-container ul {
+        margin-bottom: 15px;
+        color: #444;
+    }
+    .policy-container ul {
+        padding-left: 20px;
+    }
+    .policy-container li {
+        margin-bottom: 8px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="policy-container">
+    <h1><i class="fas fa-file-contract"></i> Company Leave Policy</h1>
+
+    <p>Welcome to LeaveFlow's company leave policy. This document outlines the types of leave available to employees, eligibility criteria, and the process for applying for leave.</p>
+
+    <h2>General Leave Principles</h2>
+    <ul>
+        <li>All leave applications must be submitted through the LeaveFlow portal.</li>
+        <li>Leave requests should be submitted at least [X days/weeks] in advance, except in cases of emergency.</li>
+        <li>Approval of leave is subject to business requirements and manager discretion.</li>
+        <li>Unused eligible leave may be carried forward or encashed as per company policy.</li>
+    </ul>
+
+    <h2>Types of Leave</h2>
+    
+    <h3>1. Annual Leave (Paid Leave)</h3>
+    <p>Employees are entitled to [Number] days of annual leave per year, accrued убий (e.g., monthly).</p>
+    <p><strong>Eligibility:</strong> All permanent employees after completion of probation period.</p>
+    <p><strong>Application:</strong> Must be applied for at least [Y days] in advance.</p>
+
+    <h3>2. Sick Leave (Paid Leave)</h3>
+    <p>Employees are entitled to [Number] days of sick leave per year.</p>
+    <p><strong>Eligibility:</strong> All employees from the date of joining.</p>
+    <p><strong>Documentation:</strong> A medical certificate may be required for sick leave exceeding [Z days] consecutive days.</p>
+    <p><strong>Notification:</strong> Employees should notify their manager as early as possible on the first day of sickness.</p>
+
+    <h3>3. Casual Leave (Paid/Unpaid - Specify)</h3>
+    <p>Employees may avail [Number] days of casual leave per year for unforeseen personal matters.</p>
+    <p><strong>Note:</strong> [Specify if prior approval is needed or if it's for emergencies].</p>
+    
+    <h3>4. Maternity/Paternity Leave</h3>
+    <p>Eligible employees are entitled to maternity/paternity leave as per statutory regulations and company policy. Please refer to the detailed [Maternity/Paternity Policy Document/HR] for more information.</p>
+
+    <h3>5. Unpaid Leave</h3>
+    <p>Unpaid leave may be granted under exceptional circumstances at the discretion of management. This must be discussed and approved in advance.</p>
+
+    <h2>Leave Application and Approval Process</h2>
+    <ol>
+        <li>Employee submits a leave request via the LeaveFlow portal.</li>
+        <li>The request is routed to the employee's direct manager for approval.</li>
+        <li>The manager reviews the request based on team workload and employee's leave balance.</li>
+        <li>Employee is notified of the approval or rejection status via email and in-app notification.</li>
+    </ol>
+
+    <p><em>This policy is subject to change. Employees will be notified of any updates. For any clarifications, please contact the HR department.</em></p>
+
+    <div style="margin-top: 30px;">
+        <a href="{{ url_for('dashboard') }}" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Back to Dashboard</a>
+    </div>
+</div>
+{% endblock %}

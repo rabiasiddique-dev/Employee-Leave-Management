@@ -1,0 +1,766 @@
+{% extends "layout.html" %}
+
+{% block head_extra %}
+<style>
+    /* Global Styles & Body Background */
+    body {
+        background-color: #f8f9fa; /* Thoda aur light grey background */
+        font-family: 'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif; /* Modern, clean font */
+        color: #344767; /* Default text color */
+        line-height: 1.6;
+        margin: 0; /* Ensure no default body margin */
+        padding: 0;
+        -webkit-font-smoothing: antialiased; /* Better font rendering */
+        -moz-osx-font-smoothing: grayscale; /* Better font rendering */
+    }
+
+    /* Overall Page Container */
+    .page-container {
+        max-width: 1280px; /* Thoda aur wider container */
+        margin: 40px auto; /* Centered with top/bottom margin */
+        padding: 0 30px; /* Thoda aur zyada horizontal padding */
+        box-sizing: border-box; /* Include padding in element's total width and height */
+    }
+
+    /* Page Header (Title, Description, Line, and Action Button) */
+    .page-header {
+        display: flex;
+        justify-content: space-between; /* Content wrapper aur button ko alag-alag corner par rakhta hai */
+        align-items: flex-start; /* Items ko top se align karta hai */
+        margin-bottom: 35px; /* Poore header block ke neeche space */
+        flex-wrap: wrap; /* Allow wrapping on smaller screens */
+        gap: 30px; /* Content wrapper aur button ke beech space agar wrap ho */
+    }
+
+    /* NEW: Wrapper for Centered Title, Description, and Line */
+    .header-content-wrapper {
+        flex-grow: 1; /* Is wrapper ko zyada se zyada space lene do */
+        text-align: center; /* Iske andar ke text aur inline-block elements ko center karo */
+    }
+
+    .page-title {
+        font-size: 2.8rem; /* Aur zyada prominent title */
+        font-weight: 700;
+        color: #212529; /* Darker, bolder color for title */
+        display: flex; /* To align icon and text */
+        align-items: center;
+        justify-content: center; /* Icon aur text ko h1 ke andar center karo */
+        gap: 15px; /* Icon aur text ke beech space */
+        margin-bottom: 20px; /* Title ke neeche space */
+        /* width: 100%; aur flex-grow is par lagane ki zarurat nahi, wrapper handle kar raha hai */
+    }
+
+    .page-title i {
+        font-size: 1.05em; /* Slightly larger icon relative to text */
+        color: #0d6efd; /* Bootstrap primary blue */
+        opacity: 0.9;
+    }
+
+    /* Page Description/Explanation */
+    .page-description {
+        font-size: 1.1rem; /* Slightly larger description text */
+        color: #6c757d; /* Muted grey for description */
+        text-align: center; /* Text ko center karo jaisa request kiya gaya hai */
+        margin-top: 0;
+        margin-bottom: 25px; /* Separator line se pehle space */
+        padding-left: 0; /* Ensure no unwanted left padding */
+    }
+
+    /* Separator Line after Description (now inside .header-content-wrapper) */
+    .description-separator-line {
+        display: block;
+        width: 75px; /* Thodi aur lambi line */
+        height: 4px; /* Thodi aur moti line for a bolder look */
+        background: linear-gradient(to right, #20c997, #0d6efd); /* Modern green-to-blue gradient */
+        margin: 0 auto; /* Line ko center karo */
+        border-radius: 2px;
+    }
+
+    /* "Apply for New Leave" Button */
+    .btn-apply-new-leave {
+        background: linear-gradient(45deg, #0d6efd, #0b5ed7); /* Deeper blue gradient */
+        color: white !important; /* Ensure white text */
+        padding: 14px 28px; /* Aur generous padding */
+        border-radius: 12px; /* Thoda aur rounded corners */
+        text-decoration: none !important; /* Remove underline */
+        font-weight: 600;
+        font-size: 1.1rem; /* Slightly larger text */
+        display: inline-flex; /* For icon alignment */
+        align-items: center;
+        gap: 10px; /* More space for icon */
+        transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); /* Smooth cubic-bezier transition */
+        box-shadow: 0 8px 25px rgba(13, 110, 253, 0.35); /* Aur pronounced shadow */
+        flex-shrink: 0; /* Prevent button from shrinking */
+        border: none; /* No default border */
+        cursor: pointer;
+    }
+
+    .btn-apply-new-leave:hover {
+        background: linear-gradient(45deg, #0b5ed7, #0d6efd); /* Reverse gradient on hover */
+        transform: translateY(-4px); /* More noticeable lift effect */
+        box-shadow: 0 12px 35px rgba(13, 110, 253, 0.45); /* Enhanced shadow on hover */
+    }
+
+    /* Filter Form Styles (Card Look) */
+    .filter-form {
+        background-color: #ffffff; /* White card background */
+        padding: 30px 35px; /* Aur generous padding */
+        border-radius: 18px; /* Aur zyada rounded corners */
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.08); /* Stronger, softer card shadow */
+        margin-bottom: 45px; /* Space below the filter card */
+    }
+
+    .filter-form label {
+        font-weight: 600; /* Bolder label */
+        color: #344767;
+        margin-bottom: 10px; /* Aur space below label */
+        display: block; /* Ensure label takes its own line */
+        font-size: 1rem;
+    }
+
+    /* Styles for both input[type="text"] and select for consistency */
+    .filter-form input[type="text"],
+    .filter-form select {
+        width: 100%; /* Full width */
+        padding: 13px 18px; /* Aur padding */
+        border: 1px solid #e9edf1; /* Bahut light grey border */
+        border-radius: 10px; /* Consistent rounded corners */
+        font-size: 1rem;
+        color: #495057;
+        background-color: #fdfdfe; /* Bahut light background for input/select */
+        transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+        box-sizing: border-box; /* Include padding in element's total width and height */
+    }
+
+    .filter-form input[type="text"]:focus,
+    .filter-form select:focus {
+        border-color: #0d6efd;
+        box-shadow: 0 0 0 5px rgba(13, 110, 253, 0.18); /* Aur subtle focus ring */
+        outline: none;
+        background-color: #ffffff;
+    }
+
+    /* Specific styles for select only (custom arrow icon) */
+    .filter-form select {
+        appearance: none; /* Remove default select arrow */
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
+        background-repeat: no-repeat;
+        background-position: right 18px center; /* Position arrow further from right edge */
+        background-size: 16px 12px;
+    }
+
+    /* Filter button row */
+    .filter-row-flex {
+        display: flex;
+        align-items: flex-end; /* Align items to the bottom */
+        gap: 20px; /* Aur space between filter elements */
+        flex-wrap: wrap; /* Allow wrapping on small screens */
+    }
+
+    .filter-item {
+        flex-grow: 1; /* Allow items to grow */
+        flex-basis: 0; /* Ensures even distribution */
+        min-width: 180px; /* Minimum width before wrapping */
+    }
+    .filter-item:nth-child(1) { /* Adjust for the search input */
+        flex-grow: 4; /* Search input takes even more space */
+        min-width: 350px; /* Ensure search input is wide enough */
+    }
+    .filter-item:last-child, /* Filter and Clear buttons */
+    .filter-item:nth-last-child(2) {
+        flex-grow: 0; /* Don't grow, width based on content */
+        flex-basis: auto;
+        min-width: unset; /* Allow buttons to shrink */
+    }
+
+
+    /* Table Wrapper for horizontal scroll and card styling */
+    .table-responsive-wrapper {
+        overflow-x: auto; /* Enables horizontal scrolling for the table if content is wider than screen */
+        -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+        margin-bottom: 35px; /* Space below the table */
+        background-color: #fff; /* White background for the table card */
+        border-radius: 18px; /* Consistent rounded corners for the table card */
+        box-shadow: 0 12px 40px rgba(0,0,0,0.08); /* Consistent card shadow */
+        border: 1px solid #e9edf1; /* Subtle border for the card */
+    }
+
+    /* Table Styles */
+    .styled-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.98rem; /* Slightly larger font size for readability */
+        margin-top: 0; /* Remove default margin as wrapper handles it */
+        min-width: 900px; /* Ensure a minimum width for the table before scroll */
+    }
+    .styled-table th, .styled-table td {
+        padding: 20px 30px; /* Aur generous padding for cells */
+        border-bottom: 1px solid #f0f2f5; /* Lighter separator lines, matching body bg */
+        text-align: left;
+        vertical-align: middle;
+        word-wrap: break-word; /* Allow long words to break and wrap */
+        white-space: normal;   /* Allow text to wrap to new lines */
+    }
+    .styled-table thead th { 
+        background-color: #f8f9fa; /* Lighter header background */
+        color: #5b6e8f; /* Thoda darker grey text for headers */
+        font-weight: 700; /* Bolder headers */
+        text-transform: uppercase; 
+        letter-spacing: 0.9px; /* Slightly more spaced out headers */
+        border-bottom: 2px solid #dee2e6; /* Thicker line below header */
+        white-space: nowrap; /* Keep headers on one line if possible */
+        font-size: 0.9em; /* Header text thoda chhota */
+    }
+    .styled-table tbody tr:last-child td { border-bottom: none; }
+    .styled-table tbody tr:hover { 
+        background-color: #f6f8fa; /* Light grey on hover */
+        transform: scale(1.005); /* Subtle zoom effect */
+        box-shadow: 0 4px 15px rgba(0,0,0,0.05); /* Subtle shadow on hover */
+        transition: background-color 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease;
+    } 
+    .styled-table tbody tr:nth-child(even) { /* Zebra striping */
+        background-color: #fdfdfe; /* Very light subtle background for even rows */
+    }
+
+    /* Specific Column Widths & Styling */
+    .styled-table .leave-type-col { width: 10%; min-width: 110px; }
+    .styled-table .dates-col-from, .styled-table .dates-col-to { width: 9%; min-width: 100px; white-space: nowrap; }
+    .styled-table .days-col { width: 5%; min-width: 60px; text-align: center; }
+    .styled-table .reason-col { width: 18%; min-width: 160px; }
+    .styled-table .applied-on-col { width: 13%; min-width: 140px; white-space: nowrap; }
+    .styled-table .status-col { 
+        width: 12%; 
+        min-width: 150px; 
+        text-align: center;
+    }
+    .styled-table .comments-col { width: 18%; min-width: 160px; }
+    .styled-table .actions-col { 
+        width: 15%; 
+        min-width: 170px; /* Increased min-width to better accommodate "Request Cancellation" */
+        text-align: center;
+    }
+    
+    /* Status Badge Styles (Consistent across application) */
+    .status-badge {
+        padding: .6em 1.2em; /* Aur generous padding */
+        font-size: .88em; /* Adjusted font size for readability */
+        font-weight: 700; line-height: 1;
+        color: #fff; text-align: center; white-space: nowrap; vertical-align: baseline;
+        border-radius: .5rem; /* Aur rounded */
+        display: inline-block;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1); /* Subtle shadow for badge */
+        min-width: 100px; /* Ensure a consistent minimum width for all badges */
+        transition: all 0.2s ease;
+    }
+    .status-badge:hover {
+        transform: translateY(-2px); /* Slight lift on hover */
+        box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+    }
+    .status-pending { background-color: #ffc107; color: #212529 !important; } /* Yellow */
+    .status-approved { background-color: #198754; color: #fff !important; } /* Darker green */
+    .status-rejected { background-color: #dc3545; color: #fff !important; } /* Red */
+    .status-cancelled, .status-cancelled-by-user, .status-cancelled-approved-leave { 
+        background-color: #6c757d; /* Grey for all 'Cancelled' states */
+        color: #fff !important; 
+    } 
+    .status-cancellation-requested { background-color: #0dcaf0; color: #212529 !important; } /* Light blue/Cyan */
+    .status-unknown { background-color: #adb5bd; color: #fff !important; } /* Neutral unknown state */
+
+    /* Empty State Styles */
+    .empty-state { 
+        text-align: center; 
+        padding: 70px 50px; /* Aur generous padding */
+        color: #777; 
+        background-color: #ffffff; 
+        border: 2px dashed #d0d5dc; /* More visible dashed border */
+        border-radius: 20px; /* Aur rounded corners */
+        margin-top: 50px; /* Space from filter or header */
+        box-shadow: 0 10px 35px rgba(0,0,0,0.06); /* Subtle shadow */
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    }
+    .empty-state i { 
+        font-size: 5em; /* Aur larger icon */
+        margin-bottom: 30px; 
+        color: #0d6efd; 
+        opacity: 0.8;
+    }
+    .empty-state p { 
+        font-size: 1.4em; /* Aur larger text */
+        margin-bottom: 25px;
+        color: #555;
+        max-width: 600px;
+    }
+    .empty-state .btn { 
+        margin-top: 20px; 
+        font-size: 1.1rem; /* Larger button for empty state */
+        padding: 14px 30px;
+        border-radius: 12px; /* Consistent radius */
+    }
+
+    /* General Button Styles (Larger buttons like Filter/Clear/Empty State) */
+    .btn { 
+        display: inline-flex; /* Use flex for icon alignment */
+        align-items: center;
+        justify-content: center;
+        font-weight: 600; /* Bolder text */
+        text-align: center; 
+        vertical-align: middle; 
+        cursor: pointer; 
+        border: 1px solid transparent; 
+        padding: .8rem 1.6rem; /* Increased padding for better click area */
+        font-size: 1rem; /* Slightly larger font */
+        line-height: 1.5; 
+        border-radius: 10px; /* Consistent rounded corners */
+        text-decoration: none !important; /* Crucial for removing underlines */
+        color: #fff; 
+        transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    .btn:hover { 
+        opacity: 0.95; 
+        transform: translateY(-3px); /* More noticeable lift on hover */
+        box-shadow: 0 8px 20px rgba(0,0,0,0.2); /* More pronounced shadow */
+    }
+    .btn i { margin-right: 10px; /* Increased space for icon */ }
+
+    /* Button Color Variants (Updated to align with desired theme where applicable) */
+    .btn-primary { background-color: #0d6efd; border-color: #0d6efd; color: #fff !important;}
+    .btn-primary:hover { background-color: #0b5ed7; border-color: #0a58ca; }
+
+    .btn-warning { background-color: #ffc107; border-color: #ffc107; color: #212529 !important;}
+    .btn-warning:hover { background-color: #e0a800; border-color: #e0a800; }
+
+    .btn-danger { background-color: #dc3545; border-color: #dc3545; color: #fff !important;}
+    .btn-danger:hover { background-color: #bd2130; border-color: #bd2130; }
+
+    .btn-info { background-color: #0dcaf0; border-color: #0dcaf0; color: #212529 !important;} /* Cyan for Filter button */
+    .btn-info:hover { background-color: #0aa2c0; border-color: #0a9eca; }
+    
+    /* Outline Button Specific Styles */
+    .btn-outline-primary { 
+        background-color: transparent; 
+        border-color: #0d6efd; 
+        color: #0d6efd !important; 
+        box-shadow: none;
+    }
+    .btn-outline-primary:hover { 
+        background-color: #0d6efd; 
+        color: #fff !important; 
+        transform: translateY(-3px); 
+        box-shadow: 0 8px 20px rgba(0, 110, 253, 0.25);
+    }
+    .btn-outline-danger { background-color: transparent; border-color: #dc3545; color: #dc3545 !important; box-shadow: none;}
+    .btn-outline-danger:hover { 
+        background-color: #dc3545; 
+        color: #fff !important; 
+        transform: translateY(-3px); 
+        box-shadow: 0 8px 20px rgba(220, 53, 69, 0.25);
+    }
+    
+    .btn-outline-secondary { background-color: transparent; border-color: #6c757d; color: #6c757d !important; box-shadow: none;}
+    .btn-outline-secondary:hover { 
+        background-color: #6c757d; 
+        color: #fff !important; 
+        transform: translateY(-3px); 
+        box-shadow: 0 8px 20px rgba(108, 117, 125, 0.25);
+    }
+    
+    /* Small Buttons for Table Actions */
+    .btn-sm { 
+        padding: .5rem 1.1rem; /* Aur generous padding for table buttons */
+        font-size: 0.9rem; /* Aur larger font for table buttons */
+        line-height: 1.5; 
+        border-radius: 8px; /* Slightly less rounded than main buttons */
+        font-weight: 500;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08); /* Lighter shadow for small buttons */
+    }
+    .btn-sm i { margin-right: 6px; } /* Smaller margin for icons in small buttons */
+    .btn-sm:hover {
+        transform: translateY(-2px); /* Less lift for smaller buttons */
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15); /* More visible shadow for small buttons */
+    }
+
+    /* Action buttons in table cells */
+    .actions-col.action-buttons {
+        display: flex; /* Use flexbox for stacking/spacing buttons */
+        flex-direction: column; /* Stack buttons vertically by default */
+        gap: 10px; /* Slightly reduced gap for better fit */
+        justify-content: center; /* Center buttons vertically */
+        align-items: center; /* Center buttons horizontally within the column */
+    }
+    .actions-col.action-buttons .btn,
+    .actions-col.action-buttons form {
+        width: 100%; /* Make buttons take full width of cell */
+        /* max-width hata diya hai taaki button cell ki width ke hisaab se adjust ho */
+        margin: 0; /* Reset margins from general button styles */
+    }
+
+    /* Utility classes */
+    .no-print {} 
+    .text-muted { color: #6c757d !important; }
+
+    /* Pagination Styles (Flask-Paginate with Bootstrap 4 styling) */
+    .pagination-container {
+        display: flex;
+        justify-content: center; /* Center pagination */
+        margin-top: 40px;
+        margin-bottom: 60px; /* Space below pagination */
+    }
+    .pagination {
+        display: flex; /* Ensure flex behavior */
+        padding-left: 0;
+        list-style: none;
+        border-radius: .25rem;
+    }
+    .page-item {
+        margin: 0 5px; /* Aur space between page numbers */
+    }
+    .page-link {
+        position: relative;
+        display: block;
+        padding: .7rem 1.2rem; /* Aur padding for page links */
+        margin-left: -1px;
+        line-height: 1.25;
+        color: #0d6efd; /* Primary blue for pagination links */
+        background-color: #fff;
+        border: 1px solid #dee2e6;
+        border-radius: 10px; /* Consistent rounded corners */
+        transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+        font-weight: 500;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05); /* Subtle shadow */
+    }
+    .page-link:hover {
+        color: #fff; /* White text on hover */
+        text-decoration: none;
+        background-color: #0d6efd; /* Primary blue background on hover */
+        border-color: #0d6efd;
+        transform: translateY(-2px); /* Subtle lift */
+        box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+    }
+    .page-item.active .page-link {
+        z-index: 1;
+        color: #fff;
+        background-color: #0d6efd; /* Primary blue for active page */
+        border-color: #0d6efd;
+        border-radius: 10px; /* Keep rounded corners on active */
+        transform: translateY(-1px); /* Slight lift for active */
+        box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+    }
+    .page-item.disabled .page-link {
+        color: #a0a7af; /* Lighter grey for disabled links */
+        pointer-events: none;
+        cursor: auto;
+        background-color: #fff;
+        border-color: #dee2e6;
+        box-shadow: none;
+        transform: none;
+    }
+    /* First/Last button specific rounded corners - handled by general border-radius */
+
+
+    /* Back to Dashboard Button at bottom-left */
+    .back-to-dashboard-container {
+        margin-top: 50px;
+        margin-bottom: 40px; /* Space from bottom of page */
+        text-align: left; /* Align to the left */
+    }
+    .back-to-dashboard-container .btn {
+        min-width: 240px; /* Ensure button is wide enough */
+        font-weight: 600;
+        font-size: 1.1rem;
+    }
+
+
+    /* Mobile Responsiveness */
+    @media (max-width: 992px) {
+        .page-container {
+            margin: 30px auto;
+            padding: 0 25px; /* Thoda adjust kiya */
+        }
+        .page-header {
+            flex-direction: column; /* Stack items vertically */
+            align-items: center; /* Stacked items ko center karo */
+            margin-bottom: 30px; /* Adjusted margin */
+            gap: 25px;
+        }
+        .header-content-wrapper {
+            width: 100%; /* Wrapper ko poori width do mobile par */
+            text-align: center;
+        }
+        .page-title {
+            font-size: 2.4rem;
+            gap: 12px;
+            justify-content: center; /* Icon aur text ko center karo */
+            margin-bottom: 18px; /* Adjusted spacing */
+        }
+        .page-description {
+            font-size: 1rem;
+            margin-bottom: 20px; /* Adjusted spacing */
+        }
+        .description-separator-line {
+            width: 65px;
+            height: 3px;
+            margin-bottom: 35px; /* Adjust spacing below line for mobile */
+        }
+        .btn-apply-new-leave {
+            width: 100%; /* Full width button on tablets */
+        }
+
+        .filter-form {
+            padding: 25px 30px; /* Further reduced padding */
+            margin-bottom: 35px;
+        }
+        .filter-row-flex {
+            flex-direction: column; /* Stack filter items vertically */
+            gap: 18px;
+            align-items: stretch; /* Make items take full width */
+        }
+        .filter-item {
+            min-width: unset; /* Remove min-width constraint */
+            width: 100%; /* Ensure full width */
+            flex-grow: 1; /* Allow all filter items to grow */
+        }
+        .filter-item:nth-child(1) { /* Reset specific flex-grow for search input */
+            flex-grow: 1;
+            min-width: unset;
+        }
+        .filter-item:last-child, 
+        .filter-item:nth-last-child(2) {
+            flex-grow: 1; /* Make buttons grow as well */
+        }
+        .filter-form input[type="text"],
+        .filter-form select,
+        .filter-form .btn {
+            width: 100%; /* Ensure full width for form controls */
+        }
+
+        .styled-table th, .styled-table td {
+            padding: 16px 22px; /* Reduce padding for smaller screens */
+            font-size: 0.92rem; /* Slightly smaller table text */
+        }
+        .styled-table thead th {
+            font-size: 0.88em; /* Smaller header text */
+            letter-spacing: 0.7px;
+        }
+        .status-badge {
+            font-size: 0.8em; /* Smaller badges */
+            padding: .5em 1em;
+            min-width: 80px; /* Adjusted min-width for mobile badges */
+        }
+        .btn-sm {
+            padding: .4rem .8rem; /* Smaller table action buttons */
+            font-size: 0.8rem;
+        }
+        .actions-col.action-buttons {
+            gap: 10px; /* Reduce gap between stacked buttons */
+        }
+        .actions-col.action-buttons .btn,
+        .actions-col.action-buttons form {
+            max-width: 130px; /* Added max-width back for smaller screens to prevent overly wide buttons */
+        }
+
+        .empty-state {
+            padding: 60px 40px;
+        }
+        .empty-state i {
+            font-size: 4.5em;
+        }
+        .empty-state p {
+            font-size: 1.3em;
+        }
+        .pagination-container {
+            margin-bottom: 35px; /* Adjust pagination margin for mobile */
+        }
+        .back-to-dashboard-container {
+            text-align: center; /* Center button on mobile */
+        }
+        .back-to-dashboard-container .btn {
+            width: 100%; /* Full width button on mobile */
+            min-width: unset;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .page-container {
+            margin: 20px auto;
+            padding: 0 15px;
+        }
+        .page-title {
+            font-size: 2.2rem;
+            margin-bottom: 15px; /* Adjusted spacing */
+        }
+        .page-description {
+            font-size: 0.95rem;
+            margin-bottom: 18px; /* Adjusted spacing */
+        }
+        .description-separator-line {
+            width: 55px;
+            height: 3px;
+            margin-bottom: 30px;
+        }
+        .btn-apply-new-leave {
+            padding: 10px 20px;
+            font-size: 0.95rem;
+            gap: 8px;
+        }
+        .filter-form {
+            padding: 20px 20px;
+        }
+        .styled-table th, .styled-table td {
+            padding: 14px 18px;
+            font-size: 0.85rem;
+        }
+        .actions-col.action-buttons .btn,
+        .actions-col.action-buttons form {
+            max-width: 110px; /* Even smaller button max-width for very small screens */
+            padding: 0.35rem 0.6rem;
+            font-size: 0.75rem;
+            gap: 5px;
+        }
+        .empty-state {
+            padding: 50px 30px;
+        }
+        .empty-state i {
+            font-size: 4em;
+        }
+        .empty-state p {
+            font-size: 1.2rem;
+        }
+        .page-link {
+            padding: .6rem 1rem;
+            font-size: 0.9rem;
+        }
+        .page-item {
+            margin: 0 3px;
+        }
+    }
+</style>
+<!-- Agar Font Awesome icons use kar rahe hain, toh make sure Font Awesome CDN ya file link layout.html mein included ho. -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+<!-- Agar Inter font use karna chahte hain, toh Google Fonts se import kar lein -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+<div class="page-container">
+    <div class="page-header">
+        <div class="header-content-wrapper"> {# Naya Wrapper title, description, aur line ko group karne ke liye #}
+            <h1 class="page-title"><i class="fas fa-calendar-alt"></i> My Leave History</h1>
+            {# Explanation below the title #}
+            <p class="page-description">
+                This section provides a comprehensive overview of all your leave applications, including their current status and details.
+            </p>
+            {# Gradient line moved inside this wrapper, after description #}
+            <div class="description-separator-line"></div>
+        </div>
+        <a href="{{ url_for('apply_leave') }}" class="btn-apply-new-leave no-print"><i class="fas fa-plus-circle"></i> Apply for New Leave</a>
+    </div>
+
+    <form method="GET" action="{{ url_for('my_leaves') }}" class="filter-form no-print">
+        <div class="filter-row-flex">
+            <div class="filter-item">
+                <label for="search_filter_my_leaves">Search All Fields:</label>
+                <input type="text" name="search_query" id="search_filter_my_leaves" 
+                       placeholder="Search by reason, type, comments, or dates..."
+                       value="{{ search_query if search_query else '' }}">
+            </div>
+            <div class="filter-item">
+                <button type="submit" class="btn btn-info"><i class="fas fa-search"></i> Search</button>
+            </div>
+            <div class="filter-item">
+                {# Clear button now clears the search query #}
+                <a href="{{ url_for('my_leaves') }}" class="btn btn-outline-secondary"><i class="fas fa-times-circle"></i> Clear</a>
+            </div>
+        </div>
+    </form>
+
+    <div class="table-responsive-wrapper">
+        {% if leaves %}
+            <table class="styled-table">
+                <thead>
+                    <tr>
+                        <th class="leave-type-col">Leave Type</th>
+                        <th class="dates-col-from">From</th>
+                        <th class="dates-col-to">To</th>
+                        <th class="days-col">Days</th>
+                        <th class="reason-col">Reason</th>
+                        <th class="applied-on-col">Applied On</th>
+                        <th class="status-col">Status</th>
+                        <th class="comments-col">Manager Comments</th>
+                        <th class="actions-col">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for leave in leaves %}
+                    <tr>
+                        <td class="leave-type-col">{{ leave.leave_type | title if leave.leave_type else 'N/A' }}</td>
+                        {# Dates are already stored as YYYY-MM-DD strings. datetime_local filter handles parsing. #}
+                        <td class="dates-col-from">{{ leave.start_date | datetime_local('%d-%b-%Y') if leave.start_date else 'N/A' }}</td>
+                        <td class="dates-col-to">{{ leave.end_date | datetime_local('%d-%b-%Y') if leave.end_date else 'N/A' }}</td>
+                        <td class="days-col">{{ leave.days_count if leave.days_count is not none else 'N/A' }}</td>
+                        <td class="reason-col">{{ leave.reason|truncate(50, True) if leave.reason else 'N/A' }}</td>
+                        <td class="applied-on-col">{{ leave.applied_date | datetime_local('%d-%b-%Y %I:%M %p') if leave.applied_date else 'N/A' }}</td>
+                        <td class="status-col">
+                            {% if leave.status %}
+                                {# Normalize status for CSS class names - e.g., "Cancelled (Approved Leave)" becomes "cancelled-approved-leave" #}
+                                {% set status_class = leave.status|lower|replace(' ', '-')|replace('(', '')|replace(')', '') %}
+                                {# Use display_status_text filter for the displayed text, always showing "Cancelled" #}
+                                <span class="status-badge status-{{ status_class }}">{{ leave.status | display_status_text }}</span>
+                            {% else %}
+                                <span class="status-badge status-unknown">Unknown</span>
+                            {% endif %}
+                        </td>
+                        <td class="comments-col">{{ leave.manager_comments if leave.manager_comments else '-' }}</td>
+                        <td class="actions-col action-buttons">
+                            {% if leave.status == 'Pending' %}
+                                <a href="{{ url_for('edit_leave_application', leave_id=leave._id) }}" class="btn btn-warning btn-sm">
+                                    <i class="fas fa-edit"></i> Edit
+                                </a>
+                                <form method="POST" action="{{ url_for('cancel_leave_application', leave_id=leave._id) }}" 
+                                      onsubmit="return confirm('Are you sure you want to cancel this leave application?');">
+                                    <button type="submit" class="btn btn-danger btn-sm">
+                                        <i class="fas fa-times-circle"></i> Cancel
+                                    </button>
+                                </form>
+                            {% elif leave.status == 'Approved' %}
+                                 <form method="POST" action="{{ url_for('cancel_leave_application', leave_id=leave._id) }}" 
+                                      onsubmit="return confirm('This leave is approved. Are you sure you want to request its cancellation?');">
+                                    <button type="submit" class="btn btn-outline-danger btn-sm"> 
+                                        <i class="fas fa-ban"></i> Request Cancellation
+                                    </button>
+                                </form>
+                            {% else %}
+                                <span class="text-muted" style="color: #9da8b4 !important; font-size: 0.9rem; text-align: center;">-</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <div class="empty-state">
+                <i class="fas fa-folder-open"></i>
+                <p>You have no leave applications{% if search_query %} matching "<strong style="color: #344767;">{{ search_query }}</strong>"{% endif %}.</p>
+                <p><a href="{{ url_for('apply_leave') }}" class="btn btn-primary"><i class="fas fa-plus"></i> Apply for a New Leave</a></p>
+            </div>
+        {% endif %}
+    </div> 
+
+    {# Pagination controls #}
+    {% if pagination and pagination.total > 0 %} {# Only show pagination if there are items #}
+    <div class="pagination-container no-print">
+        {{ pagination.links | safe }}
+    </div>
+    {% endif %}
+
+    {# Back to Dashboard Button #}
+    <div class="back-to-dashboard-container no-print">
+        <a href="{{ url_for('dashboard') }}" class="btn btn-outline-primary btn-lg">
+            <i class="fas fa-arrow-circle-left"></i> Back to Dashboard
+        </a>
+    </div>
+</div>
+{% endblock %}

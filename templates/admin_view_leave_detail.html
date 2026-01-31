@@ -1,0 +1,118 @@
+{% extends 'base_admin.html' %}
+
+{% block head %}
+{{ super() }}
+<style>
+    .leave-details-card {
+        margin-top: 20px;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    .leave-details-card .card-header {
+        background-color: #007bff;
+        color: white;
+        font-weight: bold;
+    }
+    .leave-info-row {
+        padding: 8px 0;
+        border-bottom: 1px solid #eee;
+    }
+    .leave-info-row:last-child {
+        border-bottom: none;
+    }
+    .leave-info-label {
+        font-weight: bold;
+        color: #555;
+    }
+    .status-badge {
+        padding: 5px 10px;
+        border-radius: 5px;
+        font-weight: bold;
+    }
+    .status-Pending { background-color: #ffc107; color: #333; } /* Yellow */
+    .status-Approved { background-color: #28a745; color: white; } /* Green */
+    .status-Rejected { background-color: #dc3545; color: white; } /* Red */
+    .status-Cancelled { background-color: #6c757d; color: white; } /* Grey */
+    .action-buttons {
+        margin-top: 20px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <h1 class="h3 mb-4 text-gray-800">{{ title }}</h1>
+
+    <div class="card shadow mb-4 leave-details-card">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold">Leave Application Details - {{ leave.user_name }}</h6>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="leave-info-row">
+                        <span class="leave-info-label">Applicant Name:</span> {{ leave.user_name }}
+                    </div>
+                    <div class="leave-info-row">
+                        <span class="leave-info-label">Employee ID:</span> {{ leave.employee_id }}
+                    </div>
+                    <div class="leave-info-row">
+                        <span class="leave-info-label">Leave Type:</span> {{ leave.leave_type }}
+                    </div>
+                    <div class="leave-info-row">
+                        <span class="leave-info-label">Start Date:</span> {{ leave.start_date }}
+                    </div>
+                    <div class="leave-info-row">
+                        <span class="leave-info-label">End Date:</span> {{ leave.end_date }}
+                    </div>
+                    <div class="leave-info-row">
+                        <span class="leave-info-label">Days Count:</span> {{ leave.days_count }}
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="leave-info-row">
+                        <span class="leave-info-label">Status:</span> 
+                        <span class="status-badge status-{{ leave.status.split(' ')[0] }}">{{ leave.status | display_status_text }}</span>
+                    </div>
+                    <div class="leave-info-row">
+                        <span class="leave-info-label">Applied On:</span> {{ leave.applied_date | datetime_local }}
+                    </div>
+                    {% if leave.get('last_edited_date') %}
+                    <div class="leave-info-row">
+                        <span class="leave-info-label">Last Edited On:</span> {{ leave.last_edited_date | datetime_local }}
+                    </div>
+                    {% endif %}
+                    <div class="leave-info-row">
+                        <span class="leave-info-label">Reason:</span>
+                        <p class="mb-0">{{ leave.reason }}</p>
+                    </div>
+                    {% if leave.manager_comments %}
+                    <div class="leave-info-row">
+                        <span class="leave-info-label">Manager Comments:</span>
+                        <p class="mb-0">{{ leave.manager_comments }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            {% if leave.status == 'Pending' %}
+            <hr>
+            <div class="action-buttons">
+                <h6 class="font-weight-bold text-primary">Take Action:</h6>
+                <form action="{{ url_for('manage_leave', leave_id=leave._id, action='approve') }}" method="POST" class="d-inline mr-2">
+                    <input type="text" name="manager_comments" class="form-control mb-2" placeholder="Optional: Add approval comments">
+                    <button type="submit" class="btn btn-success"><i class="fas fa-check"></i> Approve</button>
+                </form>
+                <form action="{{ url_for('manage_leave', leave_id=leave._id, action='reject') }}" method="POST" class="d-inline">
+                    <textarea name="manager_comments" class="form-control mb-2" placeholder="Reason for rejection (Required)" required></textarea>
+                    <button type="submit" class="btn btn-danger"><i class="fas fa-times"></i> Reject</button>
+                </form>
+            </div>
+            {% endif %}
+
+        </div>
+    </div>
+    
+    <a href="{{ url_for('admin_dashboard') }}" class="btn btn-secondary mt-3"><i class="fas fa-arrow-left"></i> Back to Dashboard</a>
+
+</div>
+{% endblock %}

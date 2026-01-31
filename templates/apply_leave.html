@@ -1,0 +1,313 @@
+{% extends "layout.html" %}
+
+{% block head_extra %}
+<style>
+    /* General styling for the form page, consistent with dashboard */
+    .form-page-container {
+        max-width: 900px; /* Similar to the dashboard's main content width */
+        margin: 40px auto; /* Centered with top/bottom margin */
+        padding: 0 20px; /* Horizontal padding for smaller screens */
+        color: #344767; /* Consistent text color with dashboard */
+    }
+
+    /* Page Title and Subtitle */
+    .page-title {
+        font-size: 2.5rem; /* Larger, prominent title */
+        font-weight: 700;
+        color: #007bff; /* Primary blue color from navbar/dashboard */
+        text-align: center;
+        margin-bottom: 10px;
+        display: flex; /* To align icon and text */
+        align-items: center;
+        justify-content: center;
+        gap: 15px; /* Space between icon and text */
+    }
+
+    .page-title i {
+        font-size: 1.2em; /* Slightly larger icon relative to text */
+    }
+
+    .page-subtitle {
+        font-size: 1.1rem;
+        color: #6c757d; /* Lighter grey for subtitle */
+        text-align: center;
+        margin-bottom: 30px;
+        position: relative; /* For the separator line */
+        padding-bottom: 20px; /* Space below subtitle for line */
+    }
+
+    .page-subtitle::after {
+        content: '';
+        display: block;
+        width: 60px; /* Short line */
+        height: 3px;
+        background-color: #28a745; /* Green separator, matching dashboard */
+        margin: 20px auto 0; /* Center the line below subtitle */
+        border-radius: 2px;
+    }
+
+    /* Form Card Styling */
+    .form-card {
+        background-color: #ffffff;
+        border-radius: 12px; /* More rounded corners */
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08); /* More pronounced shadow for "lift" effect */
+        padding: 40px; /* Generous padding inside the card */
+        margin-top: 30px; /* Space from the page title/subtitle */
+    }
+
+    /* Form Group Styling */
+    .styled-form .form-group {
+        margin-bottom: 25px; /* Spacing between form groups */
+    }
+
+    .styled-form label {
+        display: block; /* Make labels take full width */
+        font-weight: 600; /* Slightly bolder labels */
+        margin-bottom: 8px;
+        color: #344767; /* Dark text for labels */
+        font-size: 1rem;
+        display: flex; /* Align label text and icon */
+        align-items: center;
+        gap: 10px; /* Space between label text and icon */
+    }
+
+    .styled-form label i {
+        color: #007bff; /* Primary blue for label icons */
+        font-size: 1.1em; /* Slightly larger icon */
+    }
+
+    .styled-form input[type="date"],
+    .styled-form select,
+    .styled-form textarea {
+        width: calc(100% - 24px); /* Full width minus padding, considering box-sizing */
+        padding: 12px;
+        border: 1px solid #ced4da; /* Light grey border */
+        border-radius: 8px; /* Slightly rounded inputs */
+        font-size: 1rem;
+        color: #495057; /* Darker text for input */
+        background-color: #f8f9fa; /* Light background for inputs */
+        transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+        box-sizing: border-box; /* Include padding/border in width calculation */
+    }
+
+    .styled-form input:focus,
+    .styled-form select:focus,
+    .styled-form textarea:focus {
+        border-color: #007bff; /* Blue border on focus */
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25); /* Subtle blue glow on focus */
+        outline: none; /* Remove default outline */
+        background-color: #fff; /* White background on focus */
+    }
+
+    .styled-form textarea {
+        resize: vertical; /* Allow vertical resizing */
+        min-height: 100px; /* Minimum height for textarea */
+    }
+
+    .styled-form input::placeholder,
+    .styled-form textarea::placeholder {
+        color: #a0a7ae; /* Lighter placeholder text */
+        font-style: italic;
+    }
+
+    /* Row for Start Date and End Date */
+    .form-group-row {
+        display: flex;
+        gap: 20px; /* Space between date inputs */
+        margin-bottom: 25px; /* Spacing below the row */
+    }
+
+    .form-group-row .form-group {
+        flex: 1; /* Each date input takes equal space */
+        margin-bottom: 0; /* Remove extra margin if this is nested */
+    }
+
+    /* Leave Balance Display */
+    .leave-balance-inline {
+        list-style: none;
+        padding: 0;
+        margin: 10px 0 0; /* Space from "Your current balances" text */
+        display: flex;
+        flex-wrap: wrap; /* Allow items to wrap on small screens */
+        gap: 15px; /* Space between each balance item */
+    }
+
+    .leave-balance-inline li {
+        background-color: #e9ecef; /* Light grey background for badges */
+        color: #344767; /* Dark text */
+        padding: 8px 15px;
+        border-radius: 20px; /* Pill shape */
+        font-size: 0.95rem;
+        font-weight: 500;
+        white-space: nowrap; /* Prevent breaking balance type and days */
+        box-shadow: 0 2px 5px rgba(0,0,0,0.05); /* Subtle shadow for each pill */
+    }
+
+    /* Submit Button */
+    .btn-submit {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px; /* Space between icon and text */
+        width: auto; /* Button width adapts to content */
+        margin: 30px auto 0; /* Center the button and add top margin */
+        padding: 12px 25px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        background-color: #007bff; /* Primary blue button */
+        color: white;
+        border: none;
+        border-radius: 8px; /* Rounded corners */
+        cursor: pointer;
+        transition: background-color 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease;
+        box-shadow: 0 4px 15px rgba(0, 123, 255, 0.2); /* Subtle shadow */
+    }
+
+    .btn-submit:hover {
+        background-color: #0056b3; /* Darker blue on hover */
+        transform: translateY(-2px); /* Slight lift effect */
+        box-shadow: 0 6px 20px rgba(0, 123, 255, 0.3); /* Enhanced shadow on hover */
+    }
+
+    .btn-submit i {
+        font-size: 1.2em; /* Slightly larger icon */
+    }
+
+    /* Media Queries for Responsiveness */
+    @media (max-width: 768px) {
+        .form-page-container {
+            margin: 30px auto;
+            padding: 0 15px; /* Reduce padding on smaller screens */
+        }
+
+        .page-title {
+            font-size: 2rem; /* Slightly smaller title */
+            gap: 10px;
+        }
+
+        .page-subtitle {
+            font-size: 1rem;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+        }
+        .page-subtitle::after {
+            margin-top: 15px;
+        }
+
+        .form-card {
+            padding: 30px 20px; /* Adjust card padding */
+        }
+
+        .styled-form .form-group-row {
+            flex-direction: column; /* Stack date inputs vertically */
+            gap: 15px; /* Space between stacked inputs */
+        }
+
+        .styled-form input,
+        .styled-form select,
+        .styled-form textarea {
+            padding: 10px; /* Slightly smaller padding for inputs */
+            font-size: 0.95rem;
+        }
+
+        .leave-balance-inline {
+            gap: 10px;
+        }
+
+        .leave-balance-inline li {
+            padding: 6px 12px;
+            font-size: 0.9rem;
+        }
+
+        .btn-submit {
+            padding: 10px 20px;
+            font-size: 1rem;
+            gap: 8px;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .form-page-container {
+            margin: 20px auto;
+            padding: 0 10px;
+        }
+
+        .page-title {
+            font-size: 1.8rem;
+        }
+
+        .page-subtitle {
+            font-size: 0.9rem;
+        }
+        
+        .form-card {
+            padding: 25px 15px;
+            border-radius: 10px;
+        }
+
+        .styled-form label {
+            font-size: 0.9rem;
+            gap: 8px;
+        }
+
+        .leave-balance-inline {
+            gap: 10px;
+        }
+
+        .leave-balance-inline li {
+            padding: 5px 10px;
+            font-size: 0.85rem;
+        }
+
+        .btn-submit {
+            width: 100%; /* Full width button on very small screens */
+            font-size: 0.95rem;
+            padding: 10px 15px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="form-page-container">
+    <h1 class="page-title"><i class="fas fa-paper-plane"></i> Apply for Leave</h1>
+    <p class="page-subtitle">Submit your leave request below. Ensure all details are accurate.</p>
+    <div class="form-card">
+        <form method="POST" action="{{ url_for('apply_leave') }}" class="styled-form">
+            <div class="form-group">
+                <label for="leaveType"><i class="fas fa-suitcase-rolling"></i> Leave Type</label>
+                <select id="leaveType" name="leaveType" required>
+                    <option value="">-- Select Leave Type --</option>
+                    <option value="Annual">Annual Leave</option>
+                    <option value="Sick">Sick Leave</option>
+                    <option value="Casual">Casual Leave</option>
+                    <!-- Add more leave types as configured -->
+                </select>
+            </div>
+            <div class="form-group-row">
+                <div class="form-group">
+                    <label for="startDate"><i class="fas fa-calendar-alt"></i> Start Date</label>
+                    <input type="date" id="startDate" name="startDate" required>
+                </div>
+                <div class="form-group">
+                    <label for="endDate"><i class="fas fa-calendar-alt"></i> End Date</label>
+                    <input type="date" id="endDate" name="endDate" required>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="reason"><i class="fas fa-comment-dots"></i> Reason for Leave</label>
+                <textarea id="reason" name="reason" rows="4" required placeholder="Briefly explain the reason for your leave..."></textarea>
+            </div>
+            <div class="form-group">
+                <p><strong>Your current balances:</strong></p>
+                <ul class="leave-balance-inline">
+                    {% for type, balance in user.leave_balance.items() %}
+                    <li>{{ type|capitalize }}: {{ balance }} days</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            <button type="submit" class="btn btn-primary btn-submit"><i class="fas fa-check-circle"></i> Submit Application</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

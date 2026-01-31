@@ -1,0 +1,371 @@
+{% extends "layout.html" %}
+
+{% block head_extra %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+<style>
+    :root {
+        --primary-color: #007bff; /* #4a69bd */
+        --secondary-color: #6c757d;
+        --success-color: #28a745;
+        --danger-color: #dc3545;
+        --warning-color: #ffc107;
+        --info-color: #17a2b8;
+        --light-color: #f8f9fa;
+        --dark-color: #343a40;
+        --font-family-sans-serif: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+        --border-radius: 0.3rem;
+        --box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+        --input-padding-y: 0.5rem;
+        --input-padding-x: 0.75rem;
+    }
+
+    body {
+        font-family: var(--font-family-sans-serif);
+        line-height: 1.6;
+        color: var(--dark-color);
+        background-color: #f4f7f6; /* Light grey background for the page */
+    }
+
+    .config-page-container {
+        max-width: 900px;
+        margin: 30px auto;
+        padding: 25px 30px;
+        background-color: #fff;
+        border-radius: var(--border-radius);
+        box-shadow: var(--box-shadow);
+    }
+
+    .config-page-header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 25px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid #e9ecef;
+    }
+
+    .config-page-header i {
+        font-size: 1.8em;
+        color: var(--primary-color);
+        margin-right: 15px;
+    }
+
+    .config-page-header h1 {
+        font-size: 1.8em;
+        font-weight: 600;
+        margin: 0;
+        color: var(--dark-color);
+    }
+     .config-page-header p {
+        font-size: 0.95em;
+        color: var(--secondary-color);
+        margin-top: 5px;
+    }
+
+
+    .leave-type-form-section {
+        margin-bottom: 20px;
+    }
+
+    .leave-type-entry {
+        display: grid;
+        grid-template-columns: 1fr; /* Single column for small screens */
+        gap: 15px;
+        padding: 20px;
+        border: 1px solid #e9ecef;
+        border-radius: var(--border-radius);
+        margin-bottom: 20px;
+        background-color: var(--light-color);
+        position: relative; /* For remove button positioning */
+    }
+
+    /* Responsive grid for larger screens */
+    @media (min-width: 768px) {
+        .leave-type-entry {
+            /* id (hidden), name, balance, active, remove_button */
+            grid-template-columns: minmax(150px, 2fr) minmax(100px, 1fr) minmax(80px, auto) auto;
+             align-items: center; /* Align items vertically */
+        }
+        .leave-type-entry .form-group-active,
+        .leave-type-entry .remove-button-cell {
+            justify-self: start; /* Align active checkbox to start */
+        }
+        .leave-type-entry .remove-button-cell {
+            justify-self: end; /* Align remove button to end */
+        }
+    }
+
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+    }
+    .form-group-active { /* For checkbox */
+        flex-direction: row;
+        align-items: center;
+        gap: 8px; /* Space between checkbox and label */
+        margin-top: 5px; /* Align with other inputs if labels are on top */
+    }
+    @media (min-width: 768px) {
+        .form-group-active {
+             margin-top: 0; /* Reset margin for grid layout */
+        }
+    }
+
+
+    .form-group label {
+        font-weight: 500;
+        margin-bottom: 0.3rem;
+        font-size: 0.9em;
+        color: #495057;
+    }
+    .form-group-active label { /* For checkbox label */
+        margin-bottom: 0;
+        font-weight: normal;
+    }
+
+
+    .form-control {
+        display: block;
+        width: 100%;
+        padding: var(--input-padding-y) var(--input-padding-x);
+        font-size: 0.95rem;
+        font-weight: 400;
+        line-height: 1.5;
+        color: #495057;
+        background-color: #fff;
+        background-clip: padding-box;
+        border: 1px solid #ced4da;
+        border-radius: var(--border-radius);
+        transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+    }
+    .form-control:focus {
+        color: #495057;
+        background-color: #fff;
+        border-color: #80bdff;
+        outline: 0;
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    }
+    input[type="number"].form-control {
+        /* For number inputs, ensure they don't get too wide */
+         max-width: 120px; /* Adjust as needed */
+    }
+    input[type="checkbox"] {
+        width: 1.15em;
+        height: 1.15em;
+    }
+
+
+    .btn {
+        display: inline-block;
+        font-weight: 500;
+        color: #fff;
+        text-align: center;
+        vertical-align: middle;
+        cursor: pointer;
+        user-select: none;
+        background-color: transparent;
+        border: 1px solid transparent;
+        padding: var(--input-padding-y) var(--input-padding-x);
+        font-size: 0.95rem;
+        line-height: 1.5;
+        border-radius: var(--border-radius);
+        transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+    }
+    .btn i {
+        margin-right: 0.4em;
+    }
+
+    .btn-primary { background-color: var(--primary-color); border-color: var(--primary-color); }
+    .btn-primary:hover { background-color: #0069d9; border-color: #0062cc; }
+
+    .btn-info { background-color: var(--info-color); border-color: var(--info-color); }
+    .btn-info:hover { background-color: #138496; border-color: #117a8b; }
+    
+    .btn-danger-outline {
+        color: var(--danger-color);
+        border-color: var(--danger-color);
+    }
+    .btn-danger-outline:hover {
+        color: #fff;
+        background-color: var(--danger-color);
+        border-color: var(--danger-color);
+    }
+    .btn-sm {
+        padding: 0.3rem 0.6rem;
+        font-size: 0.8rem;
+    }
+
+    .form-actions {
+        margin-top: 30px;
+        padding-top: 20px;
+        border-top: 1px solid #e9ecef;
+        display: flex;
+        justify-content: space-between; /* Pushes "Add" and "Save" apart */
+    }
+    
+    .remove-button-cell {
+        display: flex;
+        justify-content: flex-end; /* Aligns remove button to the right within its cell */
+        align-items: center; /* Vertically aligns button if cell is taller */
+    }
+    /* On small screens, position remove button at top right */
+    @media (max-width: 767px) {
+        .remove-button-cell {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
+         .leave-type-entry {
+            padding-top: 40px; /* Add padding to top to make space for remove button */
+        }
+    }
+
+    /* Flash messages styling */
+    .flash-messages {
+        list-style: none;
+        padding: 0;
+        margin-bottom: 20px;
+    }
+    .flash-messages li {
+        padding: 10px 15px;
+        margin-bottom: 10px;
+        border-radius: var(--border-radius);
+        font-size: 0.9em;
+    }
+    .flash-success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+    .flash-danger { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+    .flash-info { background-color: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="config-page-container">
+    <div class="config-page-header">
+        <i class="fas fa-cogs"></i>
+        <div>
+            <h1>Company Leave Policy Settings</h1>
+            <p>Define leave types, their default balances for new employees, and active status. These settings will apply to new user registrations.</p>
+        </div>
+    </div>
+
+    {# Flash Messages #}
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <ul class="flash-messages">
+            {% for category, message in messages %}
+                <li class="flash-{{ category }}">{{ message }}</li>
+            {% endfor %}
+            </ul>
+        {% endif %}
+    {% endwith %}
+
+    <form method="POST" action="{{ url_for('admin_manage_leave_settings') }}">
+        {# Add CSRF token if using Flask-WTF #}
+        {# {{ form.csrf_token() }} #}
+        
+        <div id="leave-types-container" class="leave-type-form-section">
+            {% if current_settings and current_settings.leave_types %}
+                {% for type_config in current_settings.leave_types %}
+                <div class="leave-type-entry">
+                    <input type="hidden" name="type_id[]" value="{{ type_config.id }}">
+                    
+                    <div class="form-group">
+                        <label for="name_{{ type_config.id }}">Display Name <span style="color:red;">*</span></label>
+                        <input type="text" class="form-control" id="name_{{ type_config.id }}" name="type_name[]" value="{{ type_config.name }}" placeholder="e.g., Annual Leave" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="balance_{{ type_config.id }}">Default Balance (New Hires) <span style="color:red;">*</span></label>
+                        <input type="number" class="form-control" id="balance_{{ type_config.id }}" name="type_balance[]" value="{{ type_config.default_balance_new_employee }}" min="0" step="0.5" required>
+                    </div>
+
+                    <div class="form-group form-group-active">
+                        <input type="checkbox" id="active_{{ type_config.id }}" name="type_is_active[]" value="{{ type_config.id }}" {% if type_config.is_active %}checked{% endif %}>
+                        <label for="active_{{ type_config.id }}">Active</label>
+                    </div>
+                    <div class="remove-button-cell">
+                        {# Prevent deleting if it's one of the first few or only one left (JS handles 'only one left') #}
+                        {# Example: allow deleting only if not one of the first N (e.g., 3) default types #}
+                        {# You might want more robust logic in backend to prevent deletion of critical types #}
+                        <button type="button" class="btn btn-danger-outline btn-sm" onclick="removeLeaveTypeEntry(this)"><i class="fas fa-trash-alt"></i> Remove</button>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                 {# Provide a default empty entry if no configuration exists yet #}
+                 <div class="leave-type-entry">
+                    <input type="hidden" name="type_id[]" value=""> {# Empty ID for new type #}
+                    <div class="form-group">
+                        <label for="name_new_0">Display Name <span style="color:red;">*</span></label>
+                        <input type="text" class="form-control" id="name_new_0" name="type_name[]" placeholder="e.g., Annual Leave" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="balance_new_0">Default Balance (New Hires) <span style="color:red;">*</span></label>
+                        <input type="number" class="form-control" id="balance_new_0" name="type_balance[]" min="0" step="0.5" required>
+                    </div>
+                    <div class="form-group form-group-active">
+                        <input type="checkbox" id="active_new_0" name="type_is_active[]" value="" checked> {# Default to active, value handled by backend #}
+                        <label for="active_new_0">Active</label>
+                    </div>
+                     <div class="remove-button-cell">
+                        <button type="button" class="btn btn-danger-outline btn-sm" onclick="removeLeaveTypeEntry(this)"><i class="fas fa-trash-alt"></i> Remove</button>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+        
+        <div class="form-actions">
+            <button type="button" class="btn btn-info" onclick="addLeaveTypeEntryHtml()"><i class="fas fa-plus-circle"></i> Add New Leave Type</button>
+            <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Save All Settings</button>
+        </div>
+    </form>
+</div>
+
+<script>
+let newEntryCounter = 0; // To create unique IDs for new elements
+
+function addLeaveTypeEntryHtml() {
+    newEntryCounter++;
+    const container = document.getElementById('leave-types-container');
+    const newEntryDiv = document.createElement('div');
+    newEntryDiv.className = 'leave-type-entry';
+
+    // For new types, the 'value' of the checkbox for 'type_is_active[]' will be empty.
+    // The backend will need to associate the 'active' status with the newly generated ID for this type.
+    newEntryDiv.innerHTML = `
+        <input type="hidden" name="type_id[]" value=""> {# New types don't have an existing ID #}
+        <div class="form-group">
+            <label for="name_new_${newEntryCounter}">Display Name <span style="color:red;">*</span></label>
+            <input type="text" class="form-control" id="name_new_${newEntryCounter}" name="type_name[]" placeholder="e.g., Maternity Leave" required>
+        </div>
+        <div class="form-group">
+            <label for="balance_new_${newEntryCounter}">Default Balance (New Hires) <span style="color:red;">*</span></label>
+            <input type="number" class="form-control" id="balance_new_${newEntryCounter}" name="type_balance[]" min="0" step="0.5" required>
+        </div>
+        <div class="form-group form-group-active">
+            <input type="checkbox" id="active_new_${newEntryCounter}" name="type_is_active[]" value="" checked> {# New types are active by default #}
+            <label for="active_new_${newEntryCounter}">Active</label>
+        </div>
+        <div class="remove-button-cell">
+            <button type="button" class="btn btn-danger-outline btn-sm" onclick="removeLeaveTypeEntry(this)"><i class="fas fa-trash-alt"></i> Remove</button>
+        </div>
+    `;
+    container.appendChild(newEntryDiv);
+}
+
+function removeLeaveTypeEntry(buttonElement) {
+    const entryToRemove = buttonElement.closest('.leave-type-entry');
+    if (entryToRemove) {
+        const container = document.getElementById('leave-types-container');
+        if (container.querySelectorAll('.leave-type-entry').length > 1) {
+            if (confirm('Are you sure you want to remove this leave type? If this type is already in use, this might have unintended consequences.')) {
+                entryToRemove.remove();
+            }
+        } else {
+            alert('At least one leave type must be defined.');
+        }
+    }
+}
+</script>
+{% endblock %}

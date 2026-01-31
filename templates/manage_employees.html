@@ -1,0 +1,1148 @@
+{% extends "layout.html" %}
+
+{% block head %}
+    <title>Manage Employees - LeaveFlow Admin</title>
+    <!-- Assuming FontAwesome is loaded in layout.html -->
+{% endblock %}
+
+{% block content %}
+<div class="admin-dashboard-container">
+    <div class="page-header-centered">
+        <h1 class="page-title">
+            <i class="fas fa-users"></i>
+            <span>Manage Employees</span>
+        </h1>
+        <p class="page-subtitle">View, add, edit, and manage employee profiles.</p>
+    </div>
+
+    <section class="admin-section">
+        <div class="actions-section">
+            <input type="text" id="employeeSearch" class="form-control" placeholder="Search by name, ID, department..." onkeyup="filterEmployees()">
+            <div class="button-group-top">
+                <button class="btn btn-success" onclick="openAddEditModal()"><i class="fas fa-user-plus"></i> Add New Employee</button>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="styled-table employee-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Department</th>
+                        <th>Status</th>
+                        <th>Role</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="employeesTableBody">
+                    <!-- Employee data will be loaded here by JavaScript -->
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    {# "Back to Dashboard" button positioned at bottom-left #}
+    <div class="back-to-dashboard-btn-container">
+        <a href="{{ url_for('admin_dashboard') }}" class="btn btn-info"><i class="fas fa-arrow-left"></i> Back to Dashboard</a>
+    </div>
+
+</div>
+
+<!-- Add/Edit Employee Modal -->
+<div id="addEditEmployeeModal" class="modal-overlay">
+    <div class="modal-content">
+        <span class="close-button" onclick="closeModal()">×</span>
+        <h3 id="modalTitle">Add New Employee</h3>
+        <form id="employeeForm" novalidate> <!-- Added novalidate to prevent default browser validation -->
+            <input type="hidden" id="employeeId">
+
+            <!-- General Error Message Display -->
+            <div id="formGeneralError" class="alert alert-danger" style="display:none;"></div>
+
+            {# Section: Personal Information #}
+            <h4 class="section-heading"><i class="fas fa-user-circle"></i> Personal Information</h4>
+            <div class="form-group">
+                <label for="name">Name:</label>
+                <input type="text" id="name" class="form-control"> <!-- Removed 'required' here, handled by JS -->
+                <span class="error-message" id="nameError"></span>
+            </div>
+            <div class="form-group">
+                <label for="email">Email:</label>
+                <input type="email" id="email" class="form-control"> <!-- Removed 'required' here, handled by JS -->
+                <span class="error-message" id="emailError"></span>
+            </div>
+            <div class="form-group">
+                <label for="phone">Phone:</label>
+                <input type="tel" id="phone" class="form-control">
+                <span class="error-message" id="phoneError"></span>
+            </div>
+            <div class="form-group">
+                <label for="address">Address:</label>
+                <textarea id="address" rows="2" class="form-control"></textarea>
+                <span class="error-message" id="addressError"></span>
+            </div>
+
+            {# Section: Employment Details #}
+            <h4 class="section-heading"><i class="fas fa-briefcase"></i> Employment Details</h4>
+            <div class="form-group">
+                <label for="designation">Designation:</label>
+                <input type="text" id="designation" class="form-control">
+                <span class="error-message" id="designationError"></span>
+            </div>
+            <div class="form-group">
+                <label for="department">Department:</label>
+                <input type="text" id="department" class="form-control">
+                <span class="error-message" id="departmentError"></span>
+            </div>
+            <div class="form-group">
+                <label for="joiningDate">Joining Date:</label>
+                <input type="date" id="joiningDate" class="form-control">
+                <span class="error-message" id="joiningDateError"></span>
+            </div>
+            <div class="form-group">
+                <label for="reportingManager">Reporting Manager:</label>
+                <select id="reportingManager" class="form-control">
+                    <option value="">None</option>
+                    <!-- Options will be populated by JS -->
+                </select>
+                <span class="error-message" id="reportingManagerError"></span>
+            </div>
+            <div class="form-group">
+                <label for="status">Status:</label>
+                <select id="status" class="form-control">
+                    <option value="Active">Active</option>
+                    <option value="Inactive">Inactive</option>
+                </select>
+                <span class="error-message" id="statusError"></span>
+            </div>
+            <div class="form-group">
+                <label for="role">Role:</label>
+                <select id="role" class="form-control">
+                    <option value="Employee">Employee</option>
+                    <option value="Manager">Manager</option>
+                    <option value="HR Admin">HR Admin</option>
+                    <option value="Admin">Admin</option> {# Added Admin role, assuming your system has this #}
+                </select>
+                <span class="error-message" id="roleError"></span>
+            </div>
+            <div class="form-group" id="passwordGroup">
+                <label for="password">Password (for new employees):</label>
+                <input type="password" id="password" class="form-control">
+                <span class="error-message" id="passwordError"></span>
+            </div>
+
+            {# Section: Leave Balances #}
+            <h4 class="section-heading"><i class="fas fa-suitcase"></i> Leave Balances (Adjustments)</h4>
+            <div class="leave-balance-adjustments">
+                <div class="form-group">
+                    <label for="annualLeaveAdjust">Annual Leave (Current: <span id="currentAnnual">0</span>):</label>
+                    <input type="number" id="annualLeaveAdjust" class="form-control adjust-input" placeholder="Adjust by (+/-)" min="-999" max="999">
+                    <span class="error-message" id="annualLeaveAdjustError"></span>
+                </div>
+                <div class="form-group">
+                    <label for="sickLeaveAdjust">Sick Leave (Current: <span id="currentSick">0</span>):</label>
+                    <input type="number" id="sickLeaveAdjust" class="form-control adjust-input" placeholder="Adjust by (+/-)" min="-999" max="999">
+                    <span class="error-message" id="sickLeaveAdjustError"></span>
+                </div>
+                <div class="form-group">
+                    <label for="casualLeaveAdjust">Casual Leave (Current: <span id="currentCasual">0</span>):</label>
+                    <input type="number" id="casualLeaveAdjust" class="form-control adjust-input" placeholder="Adjust by (+/-)" min="-999" max="999">
+                    <span class="error-message" id="casualLeaveAdjustError"></span>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Save Employee</button>
+                <button type="button" class="btn btn-secondary" onclick="closeModal()"><i class="fas fa-times"></i> Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+    /*
+    IMPORTANT: Most of these styles are copied from your previous snippets and
+    should ideally be in a central CSS file (e.g., style.css or a dedicated employees.css)
+    and linked in layout.html. This keeps HTML cleaner and makes maintenance easier.
+    */
+
+    /* General and Common Styles (consistent with dashboard) */
+    body {
+        font-family: 'Poppins', 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+        color: #344767; /* A professional dark grey */
+        background-color: #f8f9fa; /* Lighter background consistent with dashboard */
+    }
+
+    .admin-dashboard-container {
+        max-width: 1200px;
+        margin: 30px auto; /* Increased top/bottom margin */
+        padding: 30px; /* Increased padding */
+        background-color: #ffffff;
+        border-radius: 12px; /* More rounded */
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05); /* Softer, slightly larger shadow */
+        position: relative; /* Needed for absolute positioning of back button */
+        padding-bottom: 90px; /* Space for the back button at the bottom */
+        border: 1px solid #e9edf2; /* Subtle border */
+    }
+
+    /* Page Header & Titles - CENTERED */
+    .page-header-centered {
+        text-align: center;
+        margin-bottom: 40px; /* Consistent margin */
+    }
+    .page-header-centered .page-title {
+        font-family: 'Poppins', sans-serif !important;
+        display: flex; /* Kept flex for icon and text alignment */
+        align-items: center;
+        justify-content: center; /* Center content of flex */
+        gap: 15px; /* Space between icon and text */
+        color: #2b3b52; /* Deeper color for titles */
+        font-size: 2.5rem; /* Larger font size */
+        font-weight: 700; /* Bolder */
+        margin-bottom: 0.5rem;
+    }
+    .page-header-centered .page-title .fas {
+        color: #007bff; /* Primary blue for icons */
+        font-size: 2.8rem; /* Larger title icon */
+    }
+    .page-header-centered .page-subtitle {
+        font-size: 1.2rem;
+        color: #67748e;
+        max-width: 800px; /* Limit width for readability */
+        margin: 0.5rem auto 0; /* Center subtitle */
+    }
+
+    .admin-section {
+        background-color: #fff; /* Keeping consistent with container for this page's design */
+        padding: 30px; /* Increased padding */
+        border-radius: 12px; /* More rounded */
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05); /* Softer, slightly larger shadow */
+        margin-bottom: 35px; /* Consistent margin */
+        border: 1px solid #e9edf2; /* Subtle border */
+    }
+    .table-responsive {
+        overflow-x: auto; /* For responsive tables */
+    }
+    .styled-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 25px; /* Increased top margin */
+        font-size: 0.95rem;
+        border-radius: 10px; /* More rounded */
+        overflow: hidden; /* Ensures border-radius applies */
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04); /* Subtler table shadow */
+    }
+    .styled-table th,
+    .styled-table td {
+        border: 1px solid #e9ecef; /* Lighter border */
+        padding: 15px 20px; /* Increased padding */
+        text-align: left;
+    }
+    .styled-table th {
+        background-color: #f0f2f5; /* Lighter header background */
+        color: #344767; /* Darker text */
+        font-weight: 600; /* Bolder */
+        text-transform: uppercase;
+        font-size: 0.88rem; /* Slightly larger font */
+    }
+    .styled-table tbody tr:nth-child(even) {
+        background-color: #fdfdfd;
+    }
+    .styled-table tbody tr:hover {
+        background-color: #f6f9fc; /* Light hover effect */
+    }
+
+    /* Buttons (aligned with dashboard scheme) */
+    .btn {
+        padding: 10px 18px; /* Standard button padding */
+        border: none;
+        border-radius: 8px; /* Consistent rounded corners */
+        cursor: pointer;
+        font-size: 1rem;
+        font-weight: 500;
+        transition: background-color 0.2s ease-in-out, box-shadow 0.2s ease, transform 0.1s ease;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px; /* Space between icon and text */
+        text-decoration: none; /* For anchor buttons */
+        white-space: nowrap; /* Prevent button text from wrapping */
+    }
+    .btn-primary { /* Primary action: Edit, Save Employee */
+        background-color: #007bff; /* Blue */
+        color: white;
+        box-shadow: 0 2px 8px rgba(0, 123, 255, 0.2);
+    }
+    .btn-primary:hover {
+        background-color: #0056b3;
+        box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+        transform: translateY(-1px);
+    }
+    .btn-success { /* Success action: Add New Employee, Restore Employee */
+        background-color: #28a745; /* Green */
+        color: white;
+        box-shadow: 0 2px 8px rgba(40, 167, 69, 0.2);
+    }
+    .btn-success:hover {
+        background-color: #218838;
+        box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+        transform: translateY(-1px);
+    }
+    .btn-danger { /* Danger action: Delete */
+        background-color: #dc3545; /* Red */
+        color: white;
+        box-shadow: 0 2px 8px rgba(220, 53, 69, 0.2);
+    }
+    .btn-danger:hover {
+        background-color: #c82333;
+        box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+        transform: translateY(-1px);
+    }
+    .btn-secondary { /* Secondary action: Cancel */
+        background-color: #6c757d; /* Grey */
+        color: white;
+        box-shadow: 0 2px 8px rgba(108, 117, 125, 0.2);
+    }
+    .btn-secondary:hover {
+        background-color: #5a6268;
+        box-shadow: 0 4px 12px rgba(108, 117, 125, 0.3);
+        transform: translateY(-1px);
+    }
+    .btn-info { /* Informational action: Back to Dashboard */
+        background-color: #17a2b8; /* Cyan/Light Blue */
+        color: white;
+        box-shadow: 0 2px 8px rgba(23, 162, 184, 0.2);
+    }
+    .btn-info:hover {
+        background-color: #138496;
+        box-shadow: 0 4px 12px rgba(23, 162, 184, 0.3);
+        transform: translateY(-1px);
+    }
+    .btn-sm { /* Small buttons for table actions - ADJUSTED */
+        padding: 7px 14px; /* Increased padding */
+        font-size: 0.9rem; /* Increased text size */
+        gap: 6px; /* Adjust gap for icons */
+    }
+    .btn-sm .fas { /* Ensure icons are proper size within small buttons */
+        font-size: 1em; /* Make icon slightly larger than text */
+    }
+
+    /* Specific styles for Manage Employees Page */
+    .actions-section {
+        display: flex;
+        justify-content: space-between; /* Space out search bar and buttons */
+        align-items: center;
+        margin-bottom: 25px; /* Increased margin */
+        gap: 20px; /* Space between elements */
+        flex-wrap: wrap; /* Allow wrapping on smaller screens */
+    }
+
+    #employeeSearch.form-control { /* Applying generic form-control style */
+        width: 100%;
+        max-width: 450px; /* Limit max width for search bar */
+        padding: 12px 18px; /* Increased padding */
+        border: 1px solid #ced4da;
+        border-radius: 8px; /* More rounded */
+        font-size: 1.05rem; /* Slightly larger font */
+        flex-grow: 1; /* Allows search bar to take available space */
+        box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.08); /* Subtle inset shadow */
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+    #employeeSearch.form-control:focus {
+        border-color: #007bff;
+        box-shadow: 0 0 0 0.25rem rgba(0, 123, 255, 0.25), inset 0 1px 3px rgba(0, 0, 0, 0.08);
+    }
+    .button-group-top { /* For the top right buttons (Add New Employee) */
+        display: flex;
+        gap: 15px; /* More space between the buttons */
+        flex-wrap: wrap;
+    }
+
+    /* Status Badges for table - ALIGNED WITH DASHBOARD COLORS & ENHANCED VISIBILITY */
+    .status-badge {
+        display: inline-block;
+        padding: 6px 12px; /* Increased padding for better visual */
+        border-radius: 6px; /* More rounded */
+        font-size: 0.9rem; /* Increased font size for better visibility */
+        font-weight: 600; /* Ensured bold text */
+        text-align: center;
+        white-space: nowrap; /* Prevent text wrapping */
+        line-height: 1.2; /* Better line height */
+    }
+    .status-badge.active {
+        background-color: #28a745; /* Solid Green */
+        color: white; /* White text for contrast */
+    }
+    .status-badge.inactive {
+        background-color: #dc3545; /* Solid Red */
+        color: white; /* White text for contrast */
+    }
+
+    /* ID Column styling to handle long MongoDB ObjectIds */
+    .employee-table td:first-child { /* Target the ID column */
+        word-break: break-all; /* Break long IDs into next line if needed */
+        font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace; /* Monospace font for IDs makes them clearer */
+        font-size: 0.9rem; /* Slightly larger font than before */
+        color: #555;
+    }
+
+    /* Action buttons within table cells */
+    .styled-table td button.btn-sm { /* Target actual buttons specifically */
+        margin-right: 10px; /* Added proper space between Edit and Delete/Restore buttons */
+    }
+    .styled-table td button.btn-sm:last-child {
+        margin-right: 0; /* No margin on the last button */
+    }
+
+    /* Back to Dashboard Button Container - POSITIONED AT BOTTOM-LEFT */
+    .back-to-dashboard-btn-container {
+        position: absolute;
+        bottom: 30px; /* Distance from the bottom of .admin-dashboard-container */
+        left: 30px; /* Distance from the left of .admin-dashboard-container */
+        padding-top: 0; /* No extra padding here */
+        border-top: none; /* No extra line here */
+    }
+
+    /* Modal Styles (Adjusted to match consistent styling from dashboard) */
+    .modal-overlay {
+        display: none; /* IMPORTANT: Initially hidden to prevent showing on page load */
+        position: fixed;
+        z-index: 1050; /* Higher z-index than general elements but consistent with dashboard modal */
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0,0,0,0.65); /* Darker overlay */
+        backdrop-filter: blur(5px); /* Consistent blur effect */
+        /* display: flex; (This will be set by JS when modal is opened) */
+        justify-content: center;
+        align-items: center;
+        animation: fadeInOverlay 0.3s forwards;
+    }
+    @keyframes fadeInOverlay { from { opacity: 0; } to { opacity: 1; } }
+
+
+    .modal-content {
+        background-color: #ffffff;
+        margin: auto; /* Centers horizontally and vertically */
+        padding: 35px; /* More padding */
+        border-radius: 16px; /* More rounded */
+        box-shadow: 0 15px 40px rgba(0,0,0,0.25); /* Stronger, diffused shadow */
+        position: relative;
+        max-width: 650px; /* Slightly wider modal */
+        width: 90%;
+        max-height: 90vh; /* Allow modal to scroll if content is too long */
+        overflow-y: auto; /* Enable vertical scrolling */
+        animation: fadeInModal 0.4s cubic-bezier(0.25, 0.8, 0.25, 1.15); /* Bouncier animation */
+    }
+    @keyframes fadeInModal {
+        from { opacity: 0; transform: translateY(-70px) scale(0.9); }
+        to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .close-button {
+        color: #888;
+        position: absolute;
+        top: 18px; /* Adjusted position */
+        right: 25px; /* Adjusted position */
+        font-size: 34px; /* Larger */
+        font-weight: normal; /* Normal weight */
+        cursor: pointer;
+        transition: color 0.2s ease, transform 0.2s ease;
+    }
+    .close-button:hover, .close-button:focus {
+        color: #344767;
+        transform: rotate(90deg);
+    }
+
+    .modal-content h3 {
+        margin-top: 0;
+        margin-bottom: 25px; /* More space */
+        color: #344767; /* Darker title */
+        border-bottom: 1px solid #e9ecef; /* Lighter border */
+        padding-bottom: 15px; /* More padding */
+        font-size: 1.8rem; /* Larger */
+        font-weight: 600;
+        text-align: center; /* Centered modal title */
+    }
+
+    /* Section Heading style for modal form */
+    .section-heading {
+        font-size: 1.4rem; /* Larger */
+        color: #007bff; /* Primary blue for section titles */
+        margin-top: 30px; /* More margin */
+        margin-bottom: 20px; /* More margin */
+        padding-bottom: 10px; /* More padding */
+        border-bottom: 1px solid #e9ecef; /* Subtle border for separation */
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 10px; /* Space for icon */
+    }
+    .section-heading i {
+        font-size: 1.6rem; /* Larger icon */
+        color: #007bff;
+    }
+    /* Specific colors for section headings */
+    .section-heading .fa-user-circle { color: #f2a74c; } /* Orange for Personal Info */
+    .section-heading .fa-briefcase { color: #28a745; } /* Green for Employment */
+    .section-heading .fa-suitcase { color: #17a2b8; } /* Teal for Leave Balances */
+
+
+    .form-group {
+        margin-bottom: 20px; /* More space between form groups */
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 8px; /* More space */
+        font-weight: 600; /* Bolder labels */
+        color: #495057;
+        font-size: 1rem; /* Slightly larger */
+    }
+
+    .form-control { /* Unified style for all form inputs/selects */
+        width: 100%; /* Take full width of parent */
+        padding: 12px 15px; /* Increased padding */
+        border: 1px solid #ced4da;
+        border-radius: 8px; /* More rounded */
+        font-size: 1rem;
+        box-sizing: border-box; /* Include padding and border in the element's total width and height */
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        color: #343a40;
+    }
+    .form-control:focus {
+        border-color: #007bff;
+        outline: 0;
+        box-shadow: 0 0 0 0.25rem rgba(0,123,255,.25);
+    }
+    /* Adjusted width for number inputs to ensure consistent look */
+    .form-group input[type="number"].adjust-input { /* Specific class for adjustment inputs */
+        width: 150px; /* Wider input for adjustments */
+        display: inline-block;
+        vertical-align: middle;
+        text-align: center;
+        margin-left: 15px; /* More space from label */
+    }
+
+    .form-group label span {
+        font-weight: normal;
+        color: #6c757d;
+        margin-left: 8px; /* More space for current balance */
+    }
+
+    .leave-balance-adjustments {
+        border: 1px solid #dee2e6; /* Lighter border */
+        padding: 20px; /* More padding */
+        border-radius: 10px; /* More rounded */
+        background-color: #f8f9fa; /* Lighter background */
+        margin-top: 25px; /* More margin */
+    }
+
+    .leave-balance-adjustments .form-group {
+        display: flex;
+        align-items: center;
+        justify-content: space-between; /* Space out label and input */
+        margin-bottom: 15px; /* More space */
+    }
+    .leave-balance-adjustments .form-group label {
+        flex: 1; /* Take available space */
+        margin-bottom: 0;
+    }
+    .leave-balance-adjustments .form-group:last-child {
+        margin-bottom: 0;
+    }
+
+    .form-actions {
+        margin-top: 30px; /* More margin */
+        text-align: right;
+        padding-top: 20px; /* More padding */
+        border-top: 1px solid #e9ecef; /* Added subtle border */
+    }
+
+    .form-actions .btn {
+        margin-left: 15px; /* More space */
+        min-width: 120px; /* Consistent width */
+        padding: 10px 20px; /* Generous padding */
+        font-weight: 600; /* Bolder */
+    }
+
+    /* NEW STYLES FOR VALIDATION FEEDBACK */
+    .form-group .error-message {
+        color: #dc3545; /* Red color for error text */
+        font-size: 0.85rem;
+        margin-top: 5px;
+        display: block; /* Make it block to take full width */
+        font-weight: 500;
+    }
+
+    .form-control.is-invalid {
+        border-color: #dc3545; /* Red border for invalid fields */
+        padding-right: calc(1.5em + .75rem);
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dc3545'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath stroke-linejoin='round' d='M5.8 3.6h.4L6 6.5z'/%3e%3ccircle cx='6' cy='8.2' r='.6' fill='%23dc3545' stroke='none'/%3e%3c/svg%3e");
+        background-repeat: no-repeat;
+        background-position: right calc(.375em + .1875rem) center;
+        background-size: calc(.75em + .375rem) calc(.75em + .375rem);
+    }
+
+    .alert {
+        padding: 1rem 1.25rem;
+        margin-bottom: 1.5rem; /* Space below alert */
+        border: 1px solid transparent;
+        border-radius: 8px; /* Consistent with other elements */
+        font-size: 0.95rem;
+        font-weight: 500;
+    }
+
+    .alert-danger {
+        color: #842029;
+        background-color: #f8d7da;
+        border-color: #f5c2c7;
+    }
+
+    /* Ensure the general error message is styled within the modal context */
+    .modal-content .alert-danger {
+        margin-top: 15px; /* Adjust if needed */
+    }
+
+    /* Media Queries for Responsiveness */
+    @media (max-width: 992px) {
+        .admin-dashboard-container {
+            padding: 25px;
+            margin: 25px auto;
+        }
+        .page-header-centered .page-title { font-size: 2.2rem; gap: 10px; }
+        .page-header-centered .page-title .fas { font-size: 2.5rem; }
+        .page-header-centered .page-subtitle { font-size: 1.1rem; margin-bottom: 30px; }
+        .admin-section { padding: 25px; margin-bottom: 30px; }
+        .actions-section { gap: 15px; }
+        #employeeSearch.form-control { max-width: 350px; padding: 10px 15px; }
+        .button-group-top { gap: 10px; }
+        .btn { padding: 8px 15px; font-size: 0.95rem; }
+        .btn-sm { padding: 6px 12px; font-size: 0.88rem; }
+        .styled-table th, .styled-table td { padding: 12px 15px; font-size: 0.9rem; }
+        .modal-content { max-width: 550px; padding: 30px; }
+        .modal-content h3 { font-size: 1.6rem; margin-bottom: 20px; padding-bottom: 12px; }
+        .section-heading { font-size: 1.3rem; margin-top: 20px; margin-bottom: 15px; padding-bottom: 8px; }
+        .section-heading i { font-size: 1.5rem; }
+        .form-group label { font-size: 0.9rem; margin-bottom: 6px; }
+        .form-control { padding: 10px 12px; font-size: 0.95rem; }
+        .leave-balance-adjustments { padding: 15px; margin-top: 20px; }
+        .form-group input[type="number"].adjust-input { width: 120px; margin-left: 10px; }
+        .form-actions { margin-top: 25px; padding-top: 15px; }
+        .form-actions .btn { min-width: 100px; padding: 8px 18px; font-size: 0.95rem; }
+    }
+
+    @media (max-width: 768px) {
+        .admin-dashboard-container {
+            margin: 15px auto;
+            padding: 15px;
+            padding-bottom: 80px; /* Adjust for mobile back button */
+        }
+        .page-header-centered .page-title {
+            font-size: 2rem;
+            gap: 10px;
+        }
+        .page-header-centered .page-title .fas { font-size: 2.2rem; }
+        .page-header-centered .page-subtitle {
+            font-size: 1rem;
+            margin-bottom: 25px;
+        }
+        .admin-section { padding: 20px; margin-bottom: 25px; border-radius: 10px; }
+        .actions-section {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 10px;
+        }
+        #employeeSearch.form-control {
+            max-width: none;
+            width: 100%;
+        }
+        .button-group-top {
+            flex-direction: column;
+            gap: 10px;
+        }
+        .button-group-top .btn {
+            width: 100%;
+            font-size: 0.9rem; /* Smaller font for mobile buttons */
+            padding: 10px 15px;
+        }
+        .styled-table { margin-top: 15px; }
+        .styled-table th, .styled-table td {
+            padding: 10px;
+            font-size: 0.8rem; /* Smaller font for table on mobile */
+            white-space: normal; /* Allow text to wrap if needed */
+        }
+        .employee-table td:first-child {
+            font-size: 0.7rem; /* Even smaller font for ID on small screens */
+        }
+        .btn-sm {
+            padding: 4px 8px;
+            font-size: 0.75rem;
+            gap: 4px;
+        }
+        .btn-sm .fas {
+            font-size: 0.9em;
+        }
+
+        .modal-content {
+            padding: 25px;
+            width: 95%;
+            border-radius: 12px;
+        }
+        .close-button {
+            top: 10px;
+            right: 15px;
+            font-size: 28px;
+        }
+        .modal-content h3 {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+        }
+        .section-heading { font-size: 1.2rem; margin-top: 20px; margin-bottom: 15px; padding-bottom: 6px; }
+        .section-heading i { font-size: 1.4rem; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { font-size: 0.85rem; margin-bottom: 5px; }
+        .form-control { padding: 10px 12px; font-size: 0.9rem; }
+        .leave-balance-adjustments { padding: 15px; margin-top: 15px; }
+        .leave-balance-adjustments .form-group { flex-direction: column; align-items: flex-start; gap: 5px; margin-bottom: 10px; }
+        .leave-balance-adjustments .form-group label { width: 100%; }
+        .form-group input[type="number"].adjust-input { width: 100%; margin-left: 0; } /* Make adjustment input full width on mobile */
+
+        .form-actions {
+            flex-direction: column;
+            gap: 10px;
+            padding-top: 15px;
+            margin-top: 20px;
+        }
+        .form-actions .btn {
+            width: 100%;
+            margin-left: 0;
+            font-size: 0.95rem;
+            padding: 10px 15px;
+        }
+
+        /* Mobile specific positioning for Back to Dashboard button */
+        .back-to-dashboard-btn-container {
+            position: static; /* Remove absolute positioning */
+            text-align: center; /* Center the button */
+            margin-top: 25px; /* Add margin from content above */
+            padding-top: 20px; /* Add padding for separator visual */
+            border-top: 1px solid #e9ecef; /* Add a separator line on mobile */
+            left: auto; bottom: auto; /* Reset positioning properties */
+        }
+    }
+
+    @media (max-width: 480px) {
+        .admin-dashboard-container { padding: 10px; margin: 10px auto; padding-bottom: 70px; }
+        .page-header-centered .page-title { font-size: 1.8rem; gap: 5px; }
+        .page-header-centered .page-title .fas { font-size: 2rem; }
+        .page-header-centered .page-subtitle { font-size: 0.9rem; margin-bottom: 20px; }
+        .admin-section { padding: 15px; margin-bottom: 20px; }
+        #employeeSearch.form-control { padding: 8px 10px; font-size: 0.9rem; }
+        .styled-table th, .styled-table td { padding: 8px; font-size: 0.75rem; }
+        .status-badge { padding: 4px 8px; font-size: 0.8rem; }
+        .btn-sm { padding: 3px 6px; font-size: 0.7rem; }
+        .modal-content { padding: 20px; }
+        .modal-content h3 { font-size: 1.3rem; margin-bottom: 15px; padding-bottom: 8px; }
+        .section-heading { font-size: 1.1rem; margin-top: 15px; margin-bottom: 10px; padding-bottom: 5px; }
+        .section-heading i { font-size: 1.2rem; }
+        .form-group label { font-size: 0.8rem; margin-bottom: 4px; }
+        .form-control { padding: 8px 10px; font-size: 0.85rem; }
+        .leave-balance-adjustments { padding: 10px; margin-top: 10px; }
+        .leave-balance-adjustments .form-group { margin-bottom: 8px; }
+        .form-actions { padding-top: 10px; margin-top: 15px; }
+    }
+</style>
+
+<script>
+    const employeesTableBody = document.getElementById('employeesTableBody');
+    const addEditEmployeeModal = document.getElementById('addEditEmployeeModal');
+    const modalTitle = document.getElementById('modalTitle');
+    const employeeForm = document.getElementById('employeeForm');
+    const employeeIdInput = document.getElementById('employeeId');
+    const passwordGroup = document.getElementById('passwordGroup');
+    const reportingManagerSelect = document.getElementById('reportingManager');
+
+    // Leave balance current displays
+    const currentAnnualSpan = document.getElementById('currentAnnual');
+    const currentSickSpan = document.getElementById('currentSick');
+    const currentCasualSpan = document.getElementById('currentCasual');
+
+    // Form fields
+    const nameInput = document.getElementById('name');
+    const emailInput = document.getElementById('email');
+    const phoneInput = document.getElementById('phone');
+    const addressInput = document.getElementById('address');
+    const designationInput = document.getElementById('designation');
+    const departmentInput = document.getElementById('department');
+    const joiningDateInput = document.getElementById('joiningDate');
+    const statusSelect = document.getElementById('status');
+    const roleSelect = document.getElementById('role');
+    const passwordInput = document.getElementById('password');
+    const annualLeaveAdjustInput = document.getElementById('annualLeaveAdjust');
+    const sickLeaveAdjustInput = document.getElementById('sickLeaveAdjust');
+    const casualLeaveAdjustInput = document.getElementById('casualLeaveAdjust');
+
+    // NEW: Error message elements
+    const formGeneralError = document.getElementById('formGeneralError');
+    const errorMessages = document.querySelectorAll('.error-message');
+    const formControls = document.querySelectorAll('.form-control'); // All inputs/selects that might get invalid class
+
+    // --- Helper function to clear all previous errors ---
+    function clearFormErrors() {
+        formGeneralError.style.display = 'none';
+        formGeneralError.textContent = '';
+        errorMessages.forEach(span => span.textContent = ''); // Clear field specific errors
+        formControls.forEach(input => input.classList.remove('is-invalid')); // Remove invalid class
+    }
+
+    // --- Helper function to display errors ---
+    // This function will handle both general and field-specific errors
+    function displayFormErrors(generalMessage, fieldErrors = {}) {
+        clearFormErrors(); // Always clear previous errors first
+
+        if (generalMessage) {
+            formGeneralError.textContent = generalMessage;
+            formGeneralError.style.display = 'block';
+        }
+
+        // Iterate over fieldErrors object to apply specific errors
+        for (const fieldName in fieldErrors) {
+            const inputElement = document.getElementById(fieldName);
+            const errorSpan = document.getElementById(`${fieldName}Error`);
+
+            if (inputElement) {
+                inputElement.classList.add('is-invalid');
+            }
+            if (errorSpan) {
+                errorSpan.textContent = fieldErrors[fieldName];
+            }
+        }
+    }
+
+
+    // Helper to format Employee ID for display (using employee_code or truncated _id)
+    function formatEmployeeId(employee) {
+        if (employee.employee_code) {
+            return employee.employee_code; // Use system-generated memorable ID
+        }
+        if (employee.id && employee.id.length === 24) { // Fallback to truncated MongoDB _id
+            return employee.id.substring(0, 6) + '...' + employee.id.substring(employee.id.length - 4);
+        }
+        return employee.id || 'N/A'; // Fallback to raw ID or N/A
+    }
+
+    // --- Fetch & Display Employees ---
+    async function loadEmployees() {
+        try {
+            // Ensure this API endpoint is correctly configured in your Flask app.py
+            const response = await fetch('/api/employees');
+            if (!response.ok) throw new Error('Failed to fetch employees');
+            let employees = await response.json(); // Use 'let' because we might modify it
+
+            employeesTableBody.innerHTML = ''; // Clear existing rows
+
+            // Populate Reporting Manager dropdown
+            const currentReportingManagerId = reportingManagerSelect.value;
+            reportingManagerSelect.innerHTML = '<option value="">None</option>'; // Clear existing options
+            employees.forEach(employee => {
+                const option = document.createElement('option');
+                // Use employee.id for the value (which should be the _id string from MongoDB)
+                option.value = employee.id;
+                option.textContent = employee.name;
+                // Exclude the current employee from being their own manager if in edit mode
+                if (employeeIdInput.value && employee.id === employeeIdInput.value) {
+                    option.disabled = true; // Disable current employee in manager list
+                }
+                reportingManagerSelect.appendChild(option);
+            });
+            // Re-select the value if it was previously set
+            if (currentReportingManagerId) {
+                reportingManagerSelect.value = currentReportingManagerId;
+            }
+
+            // Sort employees alphabetically by name before rendering
+            employees.sort((a, b) => a.name.localeCompare(b.name));
+
+            employees.forEach(employee => {
+                const row = employeesTableBody.insertRow();
+                row.innerHTML = `
+                    <td>${formatEmployeeId(employee)}</td> {# Use the new formatting helper #}
+                    <td>${employee.name}</td>
+                    <td>${employee.email}</td>
+                    <td>${employee.department || 'N/A'}</td>
+                    <td><span class="status-badge ${employee.status.toLowerCase()}">${employee.status}</span></td>
+                    <td>${employee.role}</td>
+                    <td>
+                        <button class="btn btn-sm btn-primary" onclick="openAddEditModal('${employee.id}')"><i class="fas fa-edit"></i> Edit</button>
+                        ${employee.status === 'Inactive' ?
+                            `<button class="btn btn-sm btn-success" onclick="restoreEmployee('${employee.id}')"><i class="fas fa-undo"></i> Restore</button>` :
+                            `<button class="btn btn-sm btn-danger" onclick="deleteEmployee('${employee.id}')"><i class="fas fa-trash-alt"></i> Delete</button>`
+                        }
+                    </td>
+                `;
+            });
+        } catch (error) {
+            console.error('Error loading employees:', error);
+            // Using browser alert for list loading error, as it's outside form context
+            alert('Failed to load employee data. Please try again.');
+        }
+    }
+
+    // --- Add/Edit Modal Functions ---
+    async function openAddEditModal(employeeId = null) {
+        clearFormErrors(); // Clear errors when opening modal
+        employeeForm.reset(); // Clear form fields
+        employeeIdInput.value = ''; // Clear hidden ID
+        passwordInput.value = ''; // Ensure password field is explicitly cleared
+        annualLeaveAdjustInput.value = ''; // Clear adjustment inputs
+        sickLeaveAdjustInput.value = '';
+        casualLeaveAdjustInput.value = '';
+        currentAnnualSpan.textContent = '0'; // Reset current displays
+        currentSickSpan.textContent = '0';
+        currentCasualSpan.textContent = '0';
+
+        // Load employees first to populate reportingManagerSelect
+        await loadEmployees();
+
+        if (employeeId) {
+            modalTitle.textContent = 'Edit Employee';
+            passwordGroup.style.display = 'none'; // Hide password for existing employee
+            passwordInput.removeAttribute('required'); // Remove required for existing employee
+            try {
+                // Ensure this API endpoint is correctly configured in your Flask app.py
+                const response = await fetch(`/api/employees/${employeeId}`);
+                if (!response.ok) throw new Error('Failed to fetch employee details');
+                const employee = await response.json();
+
+                employeeIdInput.value = employee.id;
+                nameInput.value = employee.name;
+                emailInput.value = employee.email;
+                phoneInput.value = employee.phone || '';
+                addressInput.value = employee.address || '';
+                designationInput.value = employee.designation || '';
+                departmentInput.value = employee.department || '';
+                // Ensure joiningDate is in YYYY-MM-DD format for the date input
+                joiningDateInput.value = employee.joining_date || '';
+                reportingManagerSelect.value = employee.reporting_manager_id || '';
+                statusSelect.value = employee.status;
+                roleSelect.value = employee.role;
+
+                // Disable current employee from being their own manager in the dropdown
+                Array.from(reportingManagerSelect.options).forEach(option => {
+                    if (option.value === employee.id) {
+                        option.disabled = true;
+                    } else {
+                        option.disabled = false; // Re-enable others in case they were disabled by previous edit
+                    }
+                });
+
+                // Display current leave balances (provide default if not present)
+                currentAnnualSpan.textContent = (employee.leave_balances && employee.leave_balances.annual !== undefined) ? employee.leave_balances.annual : 0;
+                currentSickSpan.textContent = (employee.leave_balances && employee.leave_balances.sick !== undefined) ? employee.leave_balances.sick : 0;
+                currentCasualSpan.textContent = (employee.leave_balances && employee.leave_balances.casual !== undefined) ? employee.leave_balances.casual : 0;
+
+            } catch (error) {
+                console.error('Error opening edit modal:', error);
+                // Use custom display for this error too
+                displayFormErrors('Failed to load employee details for editing. ' + error.message);
+                return; // Don't show modal if data load fails
+            }
+        } else {
+            modalTitle.textContent = 'Add New Employee';
+            passwordGroup.style.display = 'block'; // Show password for new employee
+            passwordInput.setAttribute('required', 'true'); // Add required for new employee
+            // Ensure all reporting manager options are enabled when adding new
+            Array.from(reportingManagerSelect.options).forEach(option => option.disabled = false);
+        }
+        addEditEmployeeModal.style.display = 'flex'; // Show modal
+    }
+
+    function closeModal() {
+        addEditEmployeeModal.style.display = 'none';
+        clearFormErrors(); // Clear errors when closing modal
+    }
+    // Close modal if clicked outside
+    addEditEmployeeModal.addEventListener('click', (e) => {
+        if (e.target === addEditEmployeeModal) {
+            closeModal();
+        }
+    });
+
+    // Close modal on Escape key
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && addEditEmployeeModal.style.display === 'flex') {
+            closeModal();
+        }
+    });
+
+    // --- Save Employee (Add/Edit) - MODIFIED ---
+    employeeForm.addEventListener('submit', async (e) => {
+        e.preventDefault(); // Prevent default form submission
+        clearFormErrors(); // Clear errors before new submission attempt
+
+        const id = employeeIdInput.value;
+        const isNewEmployee = !id; // True if adding new, false if editing
+
+        // CLIENT-SIDE VALIDATION
+        let hasErrors = false;
+        const fieldErrors = {}; // Object to store field-specific error messages
+
+        // Validate Name
+        if (nameInput.value.trim() === '') {
+            fieldErrors.name = 'Name is required.';
+            hasErrors = true;
+        }
+
+        // Validate Email
+        if (emailInput.value.trim() === '') {
+            fieldErrors.email = 'Email is required.';
+            hasErrors = true;
+        } else if (!/\S+@\S+\.\S+/.test(emailInput.value)) { // Basic email format check
+            fieldErrors.email = 'Invalid email format.';
+            hasErrors = true;
+        }
+
+        // Validate Password for new employees
+        if (isNewEmployee) { // Password is required only for new employees
+            if (passwordInput.value.trim() === '') {
+                fieldErrors.password = 'Password is required for new employees.';
+                hasErrors = true;
+            } else if (passwordInput.value.trim().length < 6) { // Example: minimum password length
+                fieldErrors.password = 'Password must be at least 6 characters.';
+                hasErrors = true;
+            }
+        }
+
+        // Display client-side errors if any
+        if (hasErrors) {
+            displayFormErrors('Please correct the highlighted errors.', fieldErrors);
+            return; // Stop form submission
+        }
+
+        const payload = {
+            name: nameInput.value,
+            email: emailInput.value,
+            phone: phoneInput.value,
+            address: addressInput.value,
+            designation: designationInput.value,
+            department: departmentInput.value,
+            joining_date: joiningDateInput.value,
+            reporting_manager_id: reportingManagerSelect.value || null,
+            status: statusSelect.value,
+            role: roleSelect.value,
+
+            // Only send password if adding new employee and it's not empty (already validated above)
+            ...(isNewEmployee && passwordInput.value.trim() !== '' && { password: passwordInput.value }),
+
+            // Send adjustments, backend will calculate new totals
+            annual_leave_adjust: annualLeaveAdjustInput.value ? parseInt(annualLeaveAdjustInput.value) : 0,
+            sick_leave_adjust: sickLeaveAdjustInput.value ? parseInt(sickLeaveAdjustInput.value) : 0,
+            casual_leave_adjust: casualLeaveAdjustInput.value ? parseInt(casualLeaveAdjustInput.value) : 0,
+        };
+
+        try {
+            const url = isNewEmployee ? '/api/employees' : `/api/employees/${id}`;
+            const method = isNewEmployee ? 'POST' : 'PUT';
+
+            const response = await fetch(url, {
+                method: method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                // Assuming backend sends { message: "General error", errors: { field: "Specific error" } }
+                // If backend only sends a flat message string:
+                displayFormErrors(errorData.message || 'Failed to save employee. An unknown error occurred.');
+                // If backend sends specific field errors, use:
+                // displayFormErrors(errorData.message || 'Validation failed.', errorData.errors);
+                return;
+            }
+
+            alert('Employee saved successfully!'); // This is a success message, OK to keep simple alert for now
+            closeModal();
+            loadEmployees(); // Reload list after save
+
+        } catch (error) {
+            console.error('Error saving employee:', error);
+            displayFormErrors('Error saving employee: ' + error.message); // Display network/generic errors
+        }
+    });
+
+    // --- Delete Employee (Soft Delete) ---
+    async function deleteEmployee(id) {
+        if (!confirm('Are you sure you want to INACTIVATE this employee? They can be restored later.')) {
+            return;
+        }
+
+        try {
+            // Ensure this API endpoint is correctly configured in your Flask app.py
+            // This will send a PUT request to update the status to 'Inactive'
+            const response = await fetch(`/api/employees/${id}/inactivate`, {
+                method: 'PUT' // Use PUT to update status
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                alert('Error inactivating employee: ' + (errorData.message || 'Failed to inactivate employee'));
+                return;
+            }
+
+            alert('Employee inactivated successfully!');
+            loadEmployees(); // Reload list after inactivation
+
+        } catch (error) {
+            console.error('Error inactivating employee:', error);
+            alert('Error inactivating employee: ' + error.message);
+        }
+    }
+
+    // --- Restore Employee ---
+    async function restoreEmployee(id) {
+        if (!confirm('Are you sure you want to RESTORE this employee?')) {
+            return;
+        }
+
+        try {
+            // Ensure this API endpoint is correctly configured in your Flask app.py
+            // This will send a PUT request to update the status to 'Active'
+            const response = await fetch(`/api/employees/${id}/activate`, {
+                method: 'PUT' // Use PUT to update status
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                alert('Error restoring employee: ' + (errorData.message || 'Failed to restore employee'));
+                return;
+            }
+
+            alert('Employee restored successfully!');
+            loadEmployees(); // Reload list after restoration
+
+        } catch (error) {
+            console.error('Error restoring employee:', error);
+            alert('Error restoring employee: ' + error.message);
+        }
+    }
+
+    // --- Filter Employees (Frontend Only) ---
+    function filterEmployees() {
+        const searchTerm = document.getElementById('employeeSearch').value.toLowerCase();
+        const rows = employeesTableBody.querySelectorAll('tr');
+
+        rows.forEach(row => {
+            const textContent = row.textContent.toLowerCase();
+            row.style.display = textContent.includes(searchTerm) ? '' : 'none';
+        });
+    }
+
+    // --- Initial Load ---
+    document.addEventListener('DOMContentLoaded', loadEmployees);
+</script>
+{% endblock %}

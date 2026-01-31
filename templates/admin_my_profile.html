@@ -1,0 +1,93 @@
+{% extends "layout.html" %}
+
+{% block head_extra %}
+    <style>
+        .admin-dashboard-container { max-width: 700px; margin: 30px auto; padding: 25px; background-color: #fff; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .page-title { font-size: 2em; color: #333; margin-bottom: 8px; font-weight: 600; text-align: center; }
+        .page-subtitle { font-size: 1.1em; color: #666; margin-bottom: 30px; text-align: center; }
+        .profile-view { padding: 20px; background-color: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; }
+        .profile-details .profile-item {
+            margin-bottom: 18px;
+            font-size: 1.1em;
+            display: flex;
+            align-items: flex-start; 
+            padding: 10px 0;
+            border-bottom: 1px dashed #eee; 
+        }
+        .profile-details .profile-item:last-child {
+            border-bottom: none;
+        }
+        .profile-view .label {
+            font-weight: 600; 
+            color: #4a5568; 
+            min-width: 130px; 
+            margin-right: 15px;
+            flex-shrink: 0; 
+        }
+        .profile-view .value {
+            color: #333;
+            word-break: break-word; 
+        }
+        .btn { display: inline-block; font-weight: 500; color: #fff; text-align: center; vertical-align: middle; cursor: pointer; background-color: #007bff; border: 1px solid #007bff; padding: .6rem 1.2rem; font-size: 1rem; line-height: 1.5; border-radius: .25rem; text-decoration: none; }
+        .btn:hover { background-color: #0056b3; border-color: #0056b3; }
+        .btn i { margin-right: 8px; }
+    </style>
+{% endblock %}
+
+{% block content %}
+<div class="admin-dashboard-container"> 
+    <h1 class="page-title"><i class="fas fa-id-badge"></i> Admin Profile</h1>
+    <p class="page-subtitle">Your personal admin information.</p>
+
+    <section class="admin-section profile-view">
+        {% if admin_user %}
+        <div class="profile-details">
+            <div class="profile-item">
+                <span class="label">Name:</span>
+                <span class="value">
+                    {% if admin_user.first_name or admin_user.last_name %}
+                        {{ admin_user.first_name | default('', True) }} {{ admin_user.last_name | default('', True) }}
+                    {% else %}
+                        N/A
+                    {% endif %}
+                </span> 
+            </div>
+            <div class="profile-item">
+                <span class="label">Email:</span>
+                <span class="value">{{ admin_user.email | default('N/A') }}</span>
+            </div>
+            <div class="profile-item">
+                <span class="label">Role:</span>
+                <span class="value">{{ admin_user.role | capitalize if admin_user.role else 'N/A' }}</span>
+            </div>
+            <div class="profile-item">
+                <span class="label">Employee ID:</span>
+                <span class="value">{{ admin_user.employee_id | default('N/A') }}</span>
+            </div>
+            <div class="profile-item">
+                <span class="label">Joined On:</span>
+                {# CORRECTED: Removed 'is_datetime' test. Assumes join_date is a datetime object if it exists. #}
+                <span class="value">
+                    {% if admin_user.join_date %}
+                        {{ admin_user.join_date.strftime('%Y-%m-%d') }}
+                    {% else %}
+                        N/A
+                    {% endif %}
+                </span>
+            </div>
+            {# DEBUGGING: Uncomment to see the raw admin_user object in the template #}
+            {# 
+            <hr>
+            <p><strong>DEBUG DATA:</strong></p>
+            <pre>{{ admin_user | tojson(indent=2) }}</pre>
+            #}
+        </div>
+        <div style="margin-top: 20px; text-align: center;">
+            <a href="{{ url_for('admin_account_settings') }}" class="btn btn-primary"><i class="fas fa-edit"></i> Edit Profile & Settings</a>
+        </div>
+        {% else %}
+        <p>Admin user information could not be loaded.</p>
+        {% endif %}
+    </section>
+</div>
+{% endblock %}

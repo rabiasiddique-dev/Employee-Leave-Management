@@ -1,0 +1,175 @@
+{% extends "layout.html" %}
+
+{% block head_extra %}
+<style>
+    .report-view-container { max-width: 1100px; margin: 20px auto; padding: 20px; background-color: #fff; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+    .report-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid #eee; }
+    .report-header .page-title { margin-bottom: 0; }
+    .page-title { font-size: 1.8em; color: #333; }
+    h3.report-period-title { font-size: 1.4em; color: #555; margin-top: 20px; margin-bottom: 15px; text-align: center;}
+
+    .filter-form { background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 30px; border: 1px solid #dee2e6;}
+    .styled-table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 0.9em;}
+    .styled-table th, .styled-table td { padding: 10px 12px; border: 1px solid #e0e0e0; text-align: left; }
+    .styled-table thead th { background-color: #e9ecef; font-weight: 600; text-transform: capitalize; color: #495057;}
+    .styled-table tbody tr:nth-child(even) { background-color: #f7f7f7; }
+    .styled-table tbody tr:hover { background-color: #f0f8ff; }
+    
+    .empty-state { text-align: center; padding: 50px 20px; color: #777; background-color: #f9f9f9; border: 1px dashed #ddd; border-radius: 5px; margin-top: 20px;}
+    .empty-state i { font-size: 3em; margin-bottom: 15px; color: #007bff; }
+    .empty-state p { font-size: 1.1em; }
+
+    .form-control, .form-control-sm { display: block; width: 100%; padding: .375rem .75rem; font-size: 1rem; line-height: 1.5; color: #495057; background-color: #fff; background-clip: padding-box; border: 1px solid #ced4da; border-radius: .25rem; box-sizing: border-box;}
+    .form-control-sm { padding: .25rem .5rem; font-size: .875rem; line-height: 1.5; border-radius: .2rem;}
+    .row { display: flex; flex-wrap: wrap; margin-right: -10px; margin-left: -10px;}
+    .col-md-3, .col-md-2, .col-md-12 { position: relative; width: 100%; padding-right: 10px; padding-left: 10px;} 
+    .d-flex { display: flex !important; }
+    .align-items-end { align-items: flex-end !important; }
+    .w-100 { width: 100% !important; }
+    @media (min-width: 768px) { 
+        .col-md-2 { flex: 0 0 16.666667%; max-width: 16.666667%;} 
+        .col-md-3 { flex: 0 0 25%; max-width: 25%;} 
+        .col-md-12 { flex: 0 0 100%; max-width: 100%;} 
+    } 
+    .form-group { margin-bottom: 1rem; }
+    .mt-2 { margin-top: .5rem !important; }
+    .mt-3 { margin-top: 1rem !important; }
+    .mb-3 { margin-bottom: 1rem !important;}
+    .mb-4 { margin-bottom: 1.5rem !important; }
+    .p-3 { padding: 1rem !important; }
+    .btn { display: inline-block; font-weight: 500; text-align: center; vertical-align: middle; cursor: pointer; background-color: #007bff; border: 1px solid #007bff; padding: .5rem 1rem; font-size: 0.9rem; line-height: 1.5; border-radius: .25rem; text-decoration: none; color: #fff; }
+    .btn:hover { opacity: 0.85; }
+    .btn i { margin-right: 6px; }
+    .btn-primary { background-color: #007bff; border-color: #007bff;}
+    .btn-success { background-color: #28a745; border-color: #28a745;}
+    .btn-outline-secondary { color: #6c757d; border-color: #6c757d; background-color: transparent; }
+    .btn-outline-secondary:hover { color: #fff; background-color: #6c757d; }
+    .btn-sm { padding: .35rem .7rem; font-size: .8rem; line-height: 1.5; border-radius: .2rem; }
+    .btn-secondary { background-color: #6c757d; border-color: #6c757d;}
+    
+    @media print {
+        /* ... (Print styles similar to comprehensive report) ... */
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="report-view-container">
+    <div class="report-header">
+        <h1 class="page-title"><i class="fas fa-chart-line"></i> {{ title | default("User Leave Trends") }}</h1>
+    </div>
+    
+    <form method="GET" action="{{ url_for('admin_report_trends') }}" class="filter-form no-print">
+        <div class="row">
+            <div class="col-md-3 form-group">
+                <label for="period_type_trends">Report Period:</label>
+                <select name="period_type" id="period_type_trends" class="form-control form-control-sm">
+                    <option value="monthly" {% if period_type == 'monthly' %}selected{% endif %}>Monthly</option>
+                    <option value="quarterly" {% if period_type == 'quarterly' %}selected{% endif %}>Quarterly</option>
+                    <option value="yearly" {% if period_type == 'yearly' %}selected{% endif %}>Yearly</option>
+                </select>
+            </div>
+            <div class="col-md-3 form-group">
+                <label for="year_trends">Year:</label>
+                <select name="year" id="year_trends" class="form-control form-control-sm">
+                    {# MODIFIED YEAR RANGE #}
+                    {% set current_year_val = current_year if current_year else (datetime.utcnow().year) %}
+                    {% for y in range(current_year_val - 10, current_year_val + 31) %} {# Previous 10 years, Next 30 years #}
+                        <option value="{{ y }}" {% if y == selected_year %}selected{% endif %}>{{ y }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2 form-group" id="month_selector_trends" {% if period_type != 'monthly' %}style="display:none;"{% endif %}>
+                <label for="month_trends">Month:</label>
+                <select name="month" id="month_trends" class="form-control form-control-sm">
+                    {% for m in range(1, 13) %}
+                        <option value="{{ m }}" {% if m == selected_month %}selected{% endif %}>{{ m | month_name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2 form-group" id="quarter_selector_trends" {% if period_type != 'quarterly' %}style="display:none;"{% endif %}>
+                <label for="quarter_trends">Quarter:</label>
+                <select name="quarter" id="quarter_trends" class="form-control form-control-sm">
+                    {% for q in range(1, 5) %}
+                        <option value="{{ q }}" {% if q == selected_quarter %}selected{% endif %}>Q{{ q }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2 form-group d-flex align-items-end">
+                <button type="submit" class="btn btn-primary btn-sm w-100"><i class="fas fa-filter"></i> Apply Filter</button>
+            </div>
+        </div>
+         {% if report_data %}
+        <div class="mt-2">
+             <a href="{{ url_for('admin_report_trends', period_type=period_type, year=selected_year, month=selected_month, quarter=selected_quarter, export='csv') }}" class="btn btn-success btn-sm no-print">
+                <i class="fas fa-file-csv"></i> Export to CSV
+            </a>
+            <button type="button" onclick="window.print()" class="btn btn-outline-secondary btn-sm no-print" style="margin-left: 10px;"><i class="fas fa-print"></i> Print Report</button>
+        </div>
+        {% endif %}
+    </form>
+
+    <h3 class="report-period-title">{{ report_title }}</h3>
+
+    {% if report_data %}
+        <div class="table-responsive">
+            <table class="styled-table">
+                <thead>
+                    <tr>
+                        <th>Employee ID</th>
+                        <th>Employee Name</th>
+                        <th>Leave Type</th>
+                        <th>Total Days</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in report_data %}
+                    <tr>
+                        <td>{{ item.employee_id | default('N/A') }}</td>
+                        <td>{{ item.employee_name | default('Unknown User') }}</td>
+                        <td>{{ item.leave_type | title }}</td>
+                        <td>{{ item.total_days }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% elif request.args.get('period_type') %} {# Show only if filters applied but no data #}
+        <div class="empty-state">
+            <i class="fas fa-info-circle"></i>
+            <p>No leave data found for the selected period and filters.</p>
+        </div>
+     {% else %}
+         <div class="empty-state">
+            <i class="fas fa-filter"></i>
+            <p>Please select a period and apply filters to view the report.</p>
+        </div>
+    {% endif %}
+
+    <div class="mt-3 no-print" style="text-align: left;">
+        <a href="{{ url_for('admin_reports_dashboard') }}" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Back to Reports Menu</a>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const periodTypeSelectTrends = document.getElementById('period_type_trends'); // Unique ID
+        const monthSelectorTrends = document.getElementById('month_selector_trends');
+        const quarterSelectorTrends = document.getElementById('quarter_selector_trends');
+
+        function toggleSelectorsTrends() {
+            if (monthSelectorTrends) {
+                monthSelectorTrends.style.display = (periodTypeSelectTrends.value === 'monthly') ? 'block' : 'none';
+            }
+            if (quarterSelectorTrends) {
+                quarterSelectorTrends.style.display = (periodTypeSelectTrends.value === 'quarterly') ? 'block' : 'none';
+            }
+        }
+
+        if (periodTypeSelectTrends) {
+            periodTypeSelectTrends.addEventListener('change', toggleSelectorsTrends);
+            toggleSelectorsTrends(); 
+        }
+    });
+</script>
+{% endblock %}

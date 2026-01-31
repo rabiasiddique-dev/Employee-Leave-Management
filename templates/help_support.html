@@ -1,0 +1,89 @@
+{% extends "layout.html" %}
+
+{% block head_extra %}
+<style>
+    .support-container {
+        max-width: 800px;
+        margin: 30px auto;
+        padding: 25px;
+        background-color: #fff;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        line-height: 1.7;
+    }
+    .support-container h1 {
+        text-align: center;
+        color: #337ab7;
+        margin-bottom: 25px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #eee;
+    }
+    .support-container h2 {
+        color: #555;
+        margin-top: 30px;
+        margin-bottom: 15px;
+        font-size: 1.5em;
+    }
+    .support-container p, .support-container ul {
+        margin-bottom: 15px;
+        color: #444;
+    }
+    .support-container ul {
+        padding-left: 20px;
+    }
+    .support-container li {
+        margin-bottom: 8px;
+    }
+    .contact-info strong {
+        display: inline-block;
+        min-width: 100px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="support-container">
+    <h1><i class="fas fa-question-circle"></i> Help & Support</h1>
+
+    <p>If you encounter any issues while using the LeaveFlow system or have questions regarding leave policies, please refer to the resources below or contact our support team.</p>
+
+    <h2>Frequently Asked Questions (FAQs)</h2>
+    
+    <h3>Applying for Leave:</h3>
+    <ul>
+        <li><strong>How do I apply for leave?</strong>
+            <br>Navigate to the "Apply Leave" section from your dashboard, fill in the required details (leave type, dates, reason), and submit the form.
+        </li>
+        <li><strong>Can I cancel a leave application?</strong>
+            <br>Yes, you can typically cancel a pending leave application from the "My Leaves" page. If the leave is already approved, please contact your manager or HR.
+        </li>
+        <li><strong>How can I check my leave balance?</strong>
+            <br>Your current leave balance is displayed on your main dashboard.
+        </li>
+    </ul>
+
+    <h3>Technical Issues:</h3>
+    <ul>
+        <li><strong>I forgot my password. What should I do?</strong>
+            <br>Please use the "Forgot Password" link on the login page to reset your password.
+        </li>
+        <li><strong>The system is not working as expected.</strong>
+            <br>Try clearing your browser cache and cookies, or try a different browser. If the issue persists, please contact IT support.
+        </li>
+    </ul>
+
+    <h2>Contact Support</h2>
+    <p>If your question is not answered above, or if you need further assistance, please reach out to us:</p>
+    <ul class="contact-info">
+        <li><strong>HR Department:</strong> <a href="mailto:hr@example.com">hr@example.com</a> (Replace with actual email)</li>
+        <li><strong>IT Support:</strong> <a href="mailto:itsupport@example.com">itsupport@example.com</a> (Replace with actual email)</li>
+        <li><strong>Phone (HR):</strong> [Your HR Phone Number]</li>
+    </ul>
+
+    <p>We aim to respond to all queries within 24-48 business hours.</p>
+
+    <div style="margin-top: 30px;">
+        <a href="{{ url_for('dashboard') }}" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Back to Dashboard</a>
+    </div>
+</div>
+{% endblock %}
