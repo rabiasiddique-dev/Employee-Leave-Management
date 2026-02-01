@@ -2,4 +2,10 @@ Flask
 pymongo
 bcrypt
 python-dotenv
-Flask-Session  # For server-side sessions
+Flask-Session
+gunicorn
+flask-mail
+flask-wtf
+wtforms
+flask-paginate
+pytz
