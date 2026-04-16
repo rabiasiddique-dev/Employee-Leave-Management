@@ -9,3 +9,5 @@ flask-wtf
 wtforms
 flask-paginate
 pytz
+certifi
+dnspython

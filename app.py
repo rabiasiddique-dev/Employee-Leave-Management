@@ -1,6 +1,7 @@
 import os
 from flask import Flask, g, render_template, request, redirect, url_for, session, flash, jsonify, Response
 from pymongo import MongoClient
+import certifi
 from bson import ObjectId
 import bcrypt
 from dotenv import load_dotenv
@@ -83,7 +84,7 @@ if not MONGO_URI:
     app.logger.critical("FATAL ERROR: MONGO_URI not found.")
     exit()
 try:
-    client = MongoClient(MONGO_URI, serverSelectionTimeoutMS=5000)
+    client = MongoClient(MONGO_URI, serverSelectionTimeoutMS=5000, tlsCAFile=certifi.where())
     client.admin.command('ping')
     app.logger.info("Successfully connected to MongoDB.")
     db_name_part = MONGO_URI.split('/')[-1]
